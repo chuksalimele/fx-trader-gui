@@ -14,6 +14,7 @@ import chuks.flatbok.fx.common.listener.OrderActionListener;
 import chuks.flatbok.fx.common.listener.SymbolUpdateListener;
 import chuks.flatbok.fx.common.util.OnceAccessStore;
 import static chuks.flatbok.fx.trader.config.AppConfig.MAX_RESPONSE_WAIT_TIME;
+import chuks.flatbok.fx.trader.exception.OrderNotFoundException;
 import chuks.flatbok.fx.trader.exception.OrderSendException;
 import chuks.flatbok.fx.transport.message.MessageFactory;
 import chuks.flatbok.fx.transport.message.MessageType;
@@ -45,7 +46,6 @@ public class TraderAccountManager implements TraderAccount {
     private int accountNumber;
     private String accountName;
     OnceAccessStore<String, CompletableFuture> requestFutureStore = new OnceAccessStore();
-    UUID uuid = UUID.randomUUID();
 
     List<OrderActionListener> orderActionListenerList = new LinkedList();
     List<SymbolUpdateListener> symbolUpdateListenerList = new LinkedList();
@@ -53,8 +53,9 @@ public class TraderAccountManager implements TraderAccount {
     List<AccountListener> accountListenerList = new LinkedList();
 
     String getUniqe() {
-        // Convert UUID to string and remove the hyphens
-        return uuid.toString().replace("-", "");
+        
+        // Convert UUID to string and remove the hyphens        
+        return UUID.randomUUID().toString().replace("-", "");
     }
 
     /**
@@ -520,9 +521,14 @@ public class TraderAccountManager implements TraderAccount {
     }
 
     @Override
-    public void onOrderNotAvailable(String reason) {
+    public void onOrderNotAvailable(String reason, String message_identifier) {
+       CompletableFuture future = this.requestFutureStore
+                .getMappedItemAndDelete(message_identifier);
+       if(future !=null){
+           future.completeExceptionally(new OrderNotFoundException("Order not available at the remote end"));
+       }
         orderActionListenerList.forEach(listener -> {
-            listener.onOrderNotAvailable(reason);
+            listener.onOrderNotAvailable(reason, message_identifier);
         });
     }
 

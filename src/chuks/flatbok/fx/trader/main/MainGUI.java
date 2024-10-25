@@ -251,7 +251,7 @@ public class MainGUI extends javax.swing.JFrame {
         }
 
         @Override
-        public void onOrderNotAvailable(String errMsg) {
+        public void onOrderNotAvailable(String errMsg, String message_identifier) {
             onOrderError(null, errMsg);
         }
 

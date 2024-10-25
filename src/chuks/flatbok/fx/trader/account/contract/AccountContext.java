@@ -22,6 +22,6 @@ public interface AccountContext extends OrderActionListener, SymbolUpdateListene
     @Override
     public void onOrderRemoteError(Order order, String reason);
     @Override
-    public void onOrderNotAvailable(String reason);
+    public void onOrderNotAvailable(String reason, String message_identifier);
     
 }

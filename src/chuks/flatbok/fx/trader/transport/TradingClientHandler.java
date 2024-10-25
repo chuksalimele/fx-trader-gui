@@ -79,7 +79,7 @@ class TradingClientHandler extends SharableTransportHandler {
                 handleLogoutFaied(ctx, msg);                
         }
         
-        String message_identifier = msg.getResquestResponseIdentifier();
+        String message_identifier = msg.getIdentifier();
         
         if(message_identifier != null){
             this.accountCtx.onMessageIdentifier(message_identifier);
@@ -139,7 +139,7 @@ class TradingClientHandler extends SharableTransportHandler {
 
     private void handleOrderNotAvailable(ChannelHandlerContext ctx, ChannelMessage msg) {
         String reason = msg.getString(0);
-        this.accountCtx.onOrderNotAvailable(reason);        
+        this.accountCtx.onOrderNotAvailable(reason, msg.getIdentifier());        
     }            
     
     private void addAllOrders0(ChannelMessage msg){
