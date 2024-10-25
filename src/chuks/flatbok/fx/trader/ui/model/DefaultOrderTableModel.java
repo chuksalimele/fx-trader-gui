@@ -131,7 +131,7 @@ import javax.swing.table.AbstractTableModel;
     }
 
     @Override
-    public void onOrderNotAvailable(String errMsg) {
+    public void onOrderNotAvailable(String req_identifier, String errMsg) {
     }
     
     @Override

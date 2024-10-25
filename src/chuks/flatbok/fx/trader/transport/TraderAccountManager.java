@@ -521,14 +521,14 @@ public class TraderAccountManager implements TraderAccount {
     }
 
     @Override
-    public void onOrderNotAvailable(String reason, String message_identifier) {
+    public void onOrderNotAvailable(String req_identifier, String reason) {
        CompletableFuture future = this.requestFutureStore
-                .getMappedItemAndDelete(message_identifier);
+                .getMappedItemAndDelete(req_identifier);
        if(future !=null){
            future.completeExceptionally(new OrderNotFoundException("Order not available at the remote end"));
        }
         orderActionListenerList.forEach(listener -> {
-            listener.onOrderNotAvailable(reason, message_identifier);
+            listener.onOrderNotAvailable(req_identifier, reason);
         });
     }
 

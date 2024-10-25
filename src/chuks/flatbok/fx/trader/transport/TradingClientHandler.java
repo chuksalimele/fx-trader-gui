@@ -139,7 +139,7 @@ class TradingClientHandler extends SharableTransportHandler {
 
     private void handleOrderNotAvailable(ChannelHandlerContext ctx, ChannelMessage msg) {
         String reason = msg.getString(0);
-        this.accountCtx.onOrderNotAvailable(reason, msg.getIdentifier());        
+        this.accountCtx.onOrderNotAvailable(msg.getIdentifier(), reason);        
     }            
     
     private void addAllOrders0(ChannelMessage msg){

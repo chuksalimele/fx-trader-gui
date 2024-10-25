@@ -174,7 +174,7 @@ public class Activity extends ActivityAdapter {
     }
 
     @Override
-    public void onOrderNotAvailable(String errMsg) {
+    public void onOrderNotAvailable(String req_identifier, String errMsg) {
     }
 
     @Override

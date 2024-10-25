@@ -55,7 +55,7 @@ public class ActivityAdapter implements OrderActionListener, SymbolUpdateListene
     }
 
     @Override
-    public void onOrderNotAvailable(String errMsg) {
+    public void onOrderNotAvailable(String req_identifier, String errMsg) {
     }
 
     @Override
