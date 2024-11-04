@@ -292,7 +292,7 @@ class ExpertServiceImpl implements IExpertService {
 
     @Override
     public double OrderTakeProfit() {
-        return selectedOrder.getTargetPrice();
+        return selectedOrder.getTakeProfitPrice();
     }
 
     @Override

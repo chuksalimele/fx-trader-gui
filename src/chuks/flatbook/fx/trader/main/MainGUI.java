@@ -2470,7 +2470,7 @@ public class MainGUI extends javax.swing.JFrame {
         validatePriceInputControl(spnTakeProfitDlgOrder, order.getSymbolDigits());
         validatePriceInputControl(spnStoplossDlgOrder, order.getSymbolDigits());
 
-        spnTakeProfitDlgOrder.setValue(order.getTargetPrice());
+        spnTakeProfitDlgOrder.setValue(order.getTakeProfitPrice());
         spnStoplossDlgOrder.setValue(order.getStoplossPrice());
 
         cboActionDlgOrder.setSelectedIndex(action_index);

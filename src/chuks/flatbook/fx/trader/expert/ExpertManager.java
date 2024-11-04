@@ -10,15 +10,11 @@ import chuks.flatbook.fx.trader.expert.inject.Injector;
 import expert.ExpertAdvisorMQ4;
 import expert.contract.IExpertService;
 import java.io.File;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import org.slf4j.LoggerFactory;
 
 /**

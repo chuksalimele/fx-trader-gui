@@ -111,7 +111,7 @@ public class PendingOrderTableModel extends DefaultOrderTableModel {
             case 6 ->
                 order.getStoplossPrice();
             case 7 ->
-                order.getTargetPrice();
+                order.getTakeProfitPrice();
             default ->
                 null;
         };

@@ -127,7 +127,7 @@ public class OpenOrderTableModel extends DefaultOrderTableModel {
             case 6 ->
                 order.getStoplossPrice();
             case 7 ->
-                order.getTargetPrice();
+                order.getTakeProfitPrice();
             case 8 ->//as it is in MT4
                 order.getSide() == Order.Side.BUY ? order.getBid()
                 : order.getSide() == Order.Side.SELL ? order.getAsk() : 0;

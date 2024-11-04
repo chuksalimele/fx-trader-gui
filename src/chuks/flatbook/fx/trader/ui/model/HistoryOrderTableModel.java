@@ -107,7 +107,7 @@ public class HistoryOrderTableModel extends DefaultOrderTableModel {
             case 8 ->
                 order.getStoplossPrice();
             case 9 ->
-                order.getTargetPrice();
+                order.getTakeProfitPrice();
             case 10 ->
                 order.getCommission();
             case 11 ->
