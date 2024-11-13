@@ -7,6 +7,7 @@ package chuks.flatbook.fx.trader.expert;
 import chuks.flatbook.fx.trader.account.contract.TraderAccount;
 import chuks.flatbook.fx.trader.expert.inject.DependencyRegistry;
 import chuks.flatbook.fx.trader.expert.inject.Injector;
+import chuks.flatbook.fx.trader.main.Timeframe;
 import expert.ExpertAdvisorMQ4;
 import expert.contract.IExpertService;
 import java.io.File;
@@ -76,7 +77,7 @@ public class ExpertManager {
         });
     }
 
-    public void attach(File expertFile, String expertSymbol) throws Exception {
+    public void attach(File expertFile, String expertSymbol, Timeframe timeframe) throws Exception {
         ExpertAdvisorMQ4 ea = ExpertUtil.createExpert(expertFile.getAbsolutePath());
 
         // Create a dependency injector
@@ -86,6 +87,7 @@ public class ExpertManager {
         
         //set internal expert properites
         eaService.setSymbol(expertSymbol);
+        eaService.setTimeframe(timeframe.getInt());
         eaService.SET__FILE__(expertFile.getName());
         eaService.SET__PATH__(expertFile.getAbsolutePath());
         //more goes below

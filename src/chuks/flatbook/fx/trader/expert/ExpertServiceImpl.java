@@ -17,6 +17,7 @@ import expert.contract.IExpertService;
 import java.io.File;
 import java.nio.file.Path;
 import java.text.DecimalFormat;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedHashMap;
@@ -52,12 +53,17 @@ class ExpertServiceImpl implements IExpertService {
     private double accountMargin;
     private double accountMarginStopout;
     private String expertSymbol;
+    private int expertTimeframe;
     private int lastErrorCode;
     private boolean isStop;
     private String __PATH__ = "";
     private String __FILE__ = "";
     DecimalFormat decimalFormat = new DecimalFormat();
     ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+    private String accountCompany;
+    private int accountNumber;
+    private String accountName;
+    private String accountCurrency;
 
     public ExpertServiceImpl(ExpertAdvisorMQ4 expert) {
         this.expert = expert;
@@ -83,6 +89,10 @@ class ExpertServiceImpl implements IExpertService {
 
     void setSymbol(String symbol) {
         expertSymbol = symbol;
+    }
+
+    void setTimeframe(int timeframe) {
+        expertTimeframe = timeframe;
     }
 
     public ExpertAdvisorMQ4 getExpert() {
@@ -162,52 +172,52 @@ class ExpertServiceImpl implements IExpertService {
 
     @Override
     public double AccountFreeMarginCheck(String symbol, int type, double lot_size) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        return Activity.checkAccountMargin(symbol, type, lot_size);
     }
 
     @Override
     public double AccountMargin() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        return Activity.getAccountMargin();
     }
 
     @Override
     public double AccountFreeMargin() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        return Activity.getAccountFreeMargin();
     }
 
     @Override
     public double AccountEquity() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        return Activity.getAccountEquity();
     }
 
     @Override
     public double AccountProfit() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        return Activity.getAccountProfit();
     }
 
     @Override
     public double AccountStopoutLevel() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        return Activity.getAccountStopoutLevel();
     }
 
     @Override
-    public double AccountLeverage() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    public int AccountLeverage() {
+        return Activity.getAccountLeverage();
     }
 
     @Override
     public double AccountBalance() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        return Activity.getAccountBalance();
     }
 
     @Override
     public double AccountCredit() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        return Activity.getAccountCredit();
     }
 
     @Override
     public boolean IsConnected() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        return Activity.isIsConnected();
     }
 
     @Override
@@ -596,17 +606,18 @@ class ExpertServiceImpl implements IExpertService {
 
     @Override
     public void PrintFormat(String str, Object... args) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        String ftmStr = str.formatted(args);
+        Print(ftmStr);
     }
 
     @Override
     public String StringFormat(String str, Object... args) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        return str.formatted(args);        
     }
 
     @Override
     public void Comment(Object... args) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        
     }
 
     @Override
@@ -631,22 +642,22 @@ class ExpertServiceImpl implements IExpertService {
 
     @Override
     public String AccountCompany() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        return accountCompany;
     }
 
     @Override
-    public long AccountNumber() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    public int AccountNumber() {
+        return accountNumber;
     }
 
     @Override
     public String AccountName() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        return accountName;
     }
 
     @Override
     public String AccountCurrency() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        return accountCurrency;
     }
 
     @Override
@@ -657,9 +668,9 @@ class ExpertServiceImpl implements IExpertService {
     @Override
     public boolean EventSetMillisecondTimer(int millsec) {
         scheduler.scheduleWithFixedDelay(
-                ()->OnTimer(),
-                millsec, 
-                millsec, 
+                () -> OnTimer(),
+                millsec,
+                millsec,
                 TimeUnit.MILLISECONDS);
         return true;
     }
@@ -669,7 +680,7 @@ class ExpertServiceImpl implements IExpertService {
         try {
             scheduler.awaitTermination(2, TimeUnit.MILLISECONDS);
             return;
-        } catch (InterruptedException ex) {            
+        } catch (InterruptedException ex) {
             logger.error(ex.getMessage(), ex);
         }
         //just in case
@@ -706,8 +717,8 @@ class ExpertServiceImpl implements IExpertService {
     }
 
     @Override
-    public long GetTickCount() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    public long GetTickCount() {// not exactly as mql4
+        return System.currentTimeMillis();// not exactly as mql4
     }
 
     @Override
@@ -726,53 +737,140 @@ class ExpertServiceImpl implements IExpertService {
     }
 
     @Override
-    public double Close(int shift) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    public long Time(int shift) {
+        return Activity.getCandleTime(expertSymbol, expertTimeframe, shift);
+    }
+
+    @Override
+    public int Volume(int shift) {
+        return Activity.getCandleVolume(expertSymbol, expertTimeframe, shift);
+    }
+
+    @Override
+    public double Open(int shift) {
+        return Activity.getCandleOpen(expertSymbol, expertTimeframe, shift);
     }
 
     @Override
     public double High(int shift) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        return Activity.getCandleHigh(expertSymbol, expertTimeframe, shift);
     }
 
     @Override
     public double Low(int shift) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        return Activity.getCandleLow(expertSymbol, expertTimeframe, shift);
     }
 
     @Override
-    public double iClose(String symbol, int timeframe, int shift) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    public double Close(int shift) {
+        return Activity.getCandleClose(expertSymbol, expertTimeframe, shift);
+    }
+
+    @Override
+    public long iTime(String symbol, int timeframe, int shift) {
+        return Activity.getCandleTime(symbol, timeframe, shift);
+    }
+
+    @Override
+    public int iVolume(String symbol, int timeframe, int shift) {
+        return Activity.getCandleVolume(symbol, timeframe, shift);
     }
 
     @Override
     public double iOpen(String symbol, int timeframe, int shift) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
-    }
-
-    @Override
-    public double iLow(String symbol, int timeframe, int shift) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        return Activity.getCandleOpen(symbol, timeframe, shift);
     }
 
     @Override
     public double iHigh(String symbol, int timeframe, int shift) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        return Activity.getCandleHigh(symbol, timeframe, shift);
     }
 
     @Override
-    public int iHighest(String symbol, int timeframe, int mode, int shift) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    public double iLow(String symbol, int timeframe, int shift) {
+        return Activity.getCandleLow(symbol, timeframe, shift);
     }
 
     @Override
-    public int iLowest(String symbol, int timeframe, int mode, int shift) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    public double iClose(String symbol, int timeframe, int shift) {
+        return Activity.getCandleClose(symbol, timeframe, shift);
+    }
+
+    @Override
+    public int iHighest(String symbol, int timeframe, int type, int count) {
+        return iHighest(symbol, timeframe, type, count, 0);
+    }
+
+    @Override
+    public int iHighest(String symbol, int timeframe, int type, int count, int start) {
+        double value = Double.MIN_VALUE;
+        int shift = start;
+        for (int i = start; i < start + count; i++) {
+            double val = 0;
+            switch (type) {
+                case MODE_OPEN ->
+                    val = Activity.getCandleOpen(symbol, timeframe, start);
+                case MODE_HIGH ->
+                    val = Activity.getCandleHigh(symbol, timeframe, start);
+                case MODE_LOW ->
+                    val = Activity.getCandleLow(symbol, timeframe, start);
+                case MODE_CLOSE ->
+                    val = Activity.getCandleClose(symbol, timeframe, start);
+                case MODE_TIME ->
+                    val = Activity.getCandleTime(symbol, timeframe, start);
+                case MODE_VOLUME ->
+                    val = Activity.getCandleVolume(symbol, timeframe, start);
+                default -> {
+                }
+            }
+            if (val > value) {
+                value = val;
+                shift = i;
+            }
+        }
+
+        return shift;
+    }
+
+    @Override
+    public int iLowest(String symbol, int timeframe, int type, int count) {
+        return iLowest(symbol, timeframe, type, count, 0);
+    }
+
+    @Override
+    public int iLowest(String symbol, int timeframe, int type, int count, int start) {
+        double value = Double.MAX_VALUE;
+        int shift = start;
+        for (int i = start; i < start + count; i++) {
+            double val = 0;
+            switch (type) {
+                case MODE_OPEN ->
+                    val = Activity.getCandleOpen(symbol, timeframe, start);
+                case MODE_HIGH ->
+                    val = Activity.getCandleHigh(symbol, timeframe, start);
+                case MODE_LOW ->
+                    val = Activity.getCandleLow(symbol, timeframe, start);
+                case MODE_CLOSE ->
+                    val = Activity.getCandleClose(symbol, timeframe, start);
+                case MODE_TIME ->
+                    val = Activity.getCandleTime(symbol, timeframe, start);
+                case MODE_VOLUME ->
+                    val = Activity.getCandleVolume(symbol, timeframe, start);
+                default -> {
+                }
+            }
+            if (val < value) {
+                value = val;
+                shift = i;
+            }
+        }
+
+        return shift;
     }
 
     @Override
     public int Period() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        return expertTimeframe;
     }
 
     @Override
@@ -831,17 +929,15 @@ class ExpertServiceImpl implements IExpertService {
     }
 
     @Override
-    public int StringSplit(String str, char ch, String[] split) {
+    public String[] StringSplit(String str, char ch) {
         String strCh = "" + ch;
         String[] arr = str.split(strCh);
-
-        //split = str.split(strCh); //assigning like this does not work in Java to keep the reference 
-        return split.length;
+        return arr;
     }
 
     @Override
-    public void StringReplace(String str, String search, String replacement) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    public String StringReplace(String str, String search, String replacement) {
+        return str.replace(search, replacement);
     }
 
     @Override
@@ -855,8 +951,8 @@ class ExpertServiceImpl implements IExpertService {
     }
 
     @Override
-    public int StringToUpper(String str, String search, int from_index) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    public String StringToUpper(String str) {
+        return str.toUpperCase();
     }
 
     @Override
@@ -870,23 +966,44 @@ class ExpertServiceImpl implements IExpertService {
     }
 
     @Override
-    public long AccountInfoInteger(int code) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    public int AccountInfoInteger(int code) {
+        switch (code) {
+            case ACCOUNT_LOGIN -> {
+                return AccountNumber();//come back
+            }
+            case ACCOUNT_LEVERAGE -> {
+                return AccountLeverage();
+            }
+            case ACCOUNT_TRADE_ALLOWED -> {
+                return IsTradeAllowed() ? 1 : 0;
+            }
+            case ACCOUNT_TRADE_EXPERT -> {
+                return IsExpertEnabled() ? 1 : 0;//may not be similar behaviour with mt4
+            }
+            default -> {
+            }
+        }
+        return -1;
     }
 
     @Override
-    public int AccountInfoIntegerInt(int code) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
-    }
-
-    @Override
-    public boolean TerminalInfoInteger(int code) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    public int TerminalInfoInteger(int code) {
+        if (code == TERMINAL_CONNECTED) {
+            return IsConnected() ? 1 : 0;
+        } else if (code == TERMINAL_DISCONNECTED) {
+            return !IsConnected() ? 1 : 0;
+        }
+        //SetLastError(UNKNOWN_CODE);
+        return -1;
     }
 
     @Override
     public void Sleep(int delay) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        try {
+            Thread.sleep(delay);
+        } catch (InterruptedException ex) {
+            Logger.getLogger(ExpertServiceImpl.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     @Override
@@ -915,50 +1032,53 @@ class ExpertServiceImpl implements IExpertService {
     }
 
     @Override
-    public int ArrayResize(long[] arr, int new_size) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    public long[] ArrayResize(long[] arr, int new_size) {
+        return Arrays.copyOf(arr, new_size);
     }
 
     @Override
-    public int ArrayResize(int[] arr, int new_size) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    public int[] ArrayResize(int[] arr, int new_size) {
+        return Arrays.copyOf(arr, new_size);
     }
 
     @Override
-    public int ArrayResize(double[] arr, int new_size) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    public double[] ArrayResize(double[] arr, int new_size) {
+        return Arrays.copyOf(arr, new_size);
     }
 
     @Override
-    public int ArrayResize(char[] arr, int new_size) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    public char[] ArrayResize(char[] arr, int new_size) {
+        return Arrays.copyOf(arr, new_size);
     }
 
     @Override
-    public void ArrayCopy(double[] from, double[] to) {
+    public double[] ArrayCopy(double[] to, double[] from) {
         for (int i = 0; i < from.length; i++) {
             if (i < to.length) {
                 to[i] = from[i];
             }
         }
+        return to;
     }
 
     @Override
-    public void ArrayCopy(long[] from, long[] to) {
+    public long[] ArrayCopy(long[] to, long[] from) {
         for (int i = 0; i < from.length; i++) {
             if (i < to.length) {
                 to[i] = from[i];
             }
         }
+        return to;
     }
 
     @Override
-    public void ArrayCopy(int[] from, int[] to) {
+    public int[] ArrayCopy(int[] to, int[] from) {
         for (int i = 0; i < from.length; i++) {
             if (i < to.length) {
                 to[i] = from[i];
             }
         }
+        return to;
     }
 
     private void SetLastError(int err_code) {

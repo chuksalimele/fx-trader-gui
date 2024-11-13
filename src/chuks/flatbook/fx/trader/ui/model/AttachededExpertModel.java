@@ -1,16 +1,9 @@
 package chuks.flatbook.fx.trader.ui.model;
 
-import chuks.flatbook.fx.trader.expert.ExpertUtil;
-import java.awt.Color;
-import java.awt.Component;
-import javax.swing.*;
-import javax.swing.event.TreeModelListener;
-import javax.swing.tree.TreeModel;
-import javax.swing.tree.TreePath;
+import chuks.flatbook.fx.trader.main.Timeframe;
 import java.io.File;
 import java.util.LinkedList;
 import javax.swing.table.AbstractTableModel;
-import javax.swing.tree.TreeCellRenderer;
 
 /**
  *
@@ -18,15 +11,18 @@ import javax.swing.tree.TreeCellRenderer;
 public class AttachededExpertModel extends AbstractTableModel {
 
     public final String symbol = "";
+    protected final String timeframe = "";
     protected final String eARuning = "EA Running";
 
-    protected String[] columnNames = {symbol, eARuning};
+    protected String[] columnNames = {symbol, timeframe, eARuning};
     protected final LinkedList<File> eaList = new LinkedList<>();
     protected final LinkedList<String> symbolList = new LinkedList<>();
+    protected final LinkedList<Timeframe> timeframeList = new LinkedList<>();
 
-    public void addExpert(File expertFile, String symbol) {
+    public void addExpert(File expertFile, String symbol, Timeframe timeframe) {
         eaList.add(expertFile);
         symbolList.add(symbol);
+        timeframeList.add(timeframe);
         fireTableRowsInserted(eaList.size() - 1, eaList.size() - 1);
     }
 
@@ -41,6 +37,7 @@ public class AttachededExpertModel extends AbstractTableModel {
     public File removeExpertAt(int index) {
         File expert = eaList.remove(index);
         symbolList.remove(index);
+        timeframeList.remove(index);
         fireTableRowsInserted(eaList.size() - 1, eaList.size() - 1);
         return expert;
     }
@@ -48,6 +45,7 @@ public class AttachededExpertModel extends AbstractTableModel {
     public void removeAll() {
         eaList.clear();
         symbolList.clear();
+        timeframeList.clear();
         fireTableRowsInserted(0, eaList.size() - 1);
     }
 
@@ -83,11 +81,15 @@ public class AttachededExpertModel extends AbstractTableModel {
     public Object getValueAt(int rowIndex, int columnIndex) {
         File expert = eaList.get(rowIndex);
         String _symbol = symbolList.get(rowIndex);
+        String strTf = timeframeList.get(rowIndex).getString();
 
+        
         return switch (columnIndex) {
             case 0 ->
                 _symbol;
-            case 1 ->
+            case 1 ->                
+                strTf;                 
+            case 2 ->
                 expert.getName();
             default ->
                 null;

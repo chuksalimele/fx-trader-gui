@@ -22,18 +22,12 @@ import chuks.flatbook.fx.common.listener.OrderActionListener;
 import chuks.flatbook.fx.common.listener.SymbolUpdateAdapter;
 import chuks.flatbook.fx.common.listener.SymbolUpdateListener;
 import java.awt.Dimension;
-import java.awt.event.MouseAdapter;
-import java.util.Date;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListModel;
 import javax.swing.JOptionPane;
-import javax.swing.ListModel;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
@@ -58,20 +52,13 @@ import java.awt.event.FocusEvent;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.FileSystems;
 import java.security.NoSuchAlgorithmException;
 import java.text.DecimalFormat;
 import java.util.Arrays;
-import javax.swing.BorderFactory;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JFormattedTextField;
 import javax.swing.JSpinner;
-import javax.swing.border.Border;
-import javax.swing.border.EmptyBorder;
-import javax.swing.border.EtchedBorder;
-import javax.swing.table.TableModel;
-import javax.swing.text.AbstractDocument;
 import javax.swing.text.DefaultFormatterFactory;
 import javax.swing.text.NumberFormatter;
 import javax.swing.tree.TreePath;
@@ -297,6 +284,7 @@ public class MainGUI extends javax.swing.JFrame {
     private Color prevEnableAutoTradingBackground;
     private Color prevEnableAutoTradingForeground;
     private String selectedSymbolForAttachExpert;
+    private String selectedTimeframeForAttachExpert;
     private static final AttachededExpertModel attachededExpertModel = new AttachededExpertModel();
     static private File selectedAttachedExpert;
 
@@ -414,8 +402,11 @@ public class MainGUI extends javax.swing.JFrame {
         mnuReAttachExpert = new javax.swing.JMenuItem();
         dlgExpertProperties = new javax.swing.JDialog();
         tabPaneDlgExpertProperties = new javax.swing.JTabbedPane();
+        pnlDlgExpertPropertiesAttachTo = new javax.swing.JPanel();
         scrollPaneDlgExpertPropertiesSelectedSymbol = new javax.swing.JScrollPane();
         lstDlgExpertPropertiesSelectedSymbol = new javax.swing.JList<>();
+        jScrollPane11 = new javax.swing.JScrollPane();
+        lstDlgExpertPropertiesSelectedTimeframe = new javax.swing.JList<>();
         pnlDlgExpertPropertiesInputs = new javax.swing.JPanel();
         jPanel3 = new javax.swing.JPanel();
         cmdDglAttachEpert = new javax.swing.JButton();
@@ -983,6 +974,7 @@ public class MainGUI extends javax.swing.JFrame {
         dlgExpertProperties.setModal(true);
         dlgExpertProperties.getContentPane().setLayout(new javax.swing.BoxLayout(dlgExpertProperties.getContentPane(), javax.swing.BoxLayout.Y_AXIS));
 
+        lstDlgExpertPropertiesSelectedSymbol.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)), "Select Symbol", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Segoe UI", 1, 14))); // NOI18N
         lstDlgExpertPropertiesSelectedSymbol.setModel(new javax.swing.AbstractListModel<String>() {
             String[] strings = { "EURUSD", "GBPUSD", "USDJPY" };
             public int getSize() { return strings.length; }
@@ -991,7 +983,46 @@ public class MainGUI extends javax.swing.JFrame {
         lstDlgExpertPropertiesSelectedSymbol.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         scrollPaneDlgExpertPropertiesSelectedSymbol.setViewportView(lstDlgExpertPropertiesSelectedSymbol);
 
-        tabPaneDlgExpertProperties.addTab("Choose Symbol", scrollPaneDlgExpertPropertiesSelectedSymbol);
+        lstDlgExpertPropertiesSelectedTimeframe.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)), "Select Timeframe", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Segoe UI", 1, 14))); // NOI18N
+        lstDlgExpertPropertiesSelectedTimeframe.setModel(new javax.swing.AbstractListModel<String>() {
+            String[] strings = { "M1", "M5", "M15", "M30", "H1", "H4", "D1", "W1", "MN1" };
+            public int getSize() { return strings.length; }
+            public String getElementAt(int i) { return strings[i]; }
+        });
+        jScrollPane11.setViewportView(lstDlgExpertPropertiesSelectedTimeframe);
+
+        javax.swing.GroupLayout pnlDlgExpertPropertiesAttachToLayout = new javax.swing.GroupLayout(pnlDlgExpertPropertiesAttachTo);
+        pnlDlgExpertPropertiesAttachTo.setLayout(pnlDlgExpertPropertiesAttachToLayout);
+        pnlDlgExpertPropertiesAttachToLayout.setHorizontalGroup(
+            pnlDlgExpertPropertiesAttachToLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 495, Short.MAX_VALUE)
+            .addGroup(pnlDlgExpertPropertiesAttachToLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, pnlDlgExpertPropertiesAttachToLayout.createSequentialGroup()
+                    .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(scrollPaneDlgExpertPropertiesSelectedSymbol, javax.swing.GroupLayout.PREFERRED_SIZE, 206, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addContainerGap(283, Short.MAX_VALUE)))
+            .addGroup(pnlDlgExpertPropertiesAttachToLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, pnlDlgExpertPropertiesAttachToLayout.createSequentialGroup()
+                    .addContainerGap(270, Short.MAX_VALUE)
+                    .addComponent(jScrollPane11, javax.swing.GroupLayout.PREFERRED_SIZE, 219, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+        );
+        pnlDlgExpertPropertiesAttachToLayout.setVerticalGroup(
+            pnlDlgExpertPropertiesAttachToLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 277, Short.MAX_VALUE)
+            .addGroup(pnlDlgExpertPropertiesAttachToLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(pnlDlgExpertPropertiesAttachToLayout.createSequentialGroup()
+                    .addContainerGap()
+                    .addComponent(scrollPaneDlgExpertPropertiesSelectedSymbol, javax.swing.GroupLayout.DEFAULT_SIZE, 265, Short.MAX_VALUE)
+                    .addContainerGap()))
+            .addGroup(pnlDlgExpertPropertiesAttachToLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, pnlDlgExpertPropertiesAttachToLayout.createSequentialGroup()
+                    .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jScrollPane11, javax.swing.GroupLayout.PREFERRED_SIZE, 265, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+        );
+
+        tabPaneDlgExpertProperties.addTab("Attach To", pnlDlgExpertPropertiesAttachTo);
 
         javax.swing.GroupLayout pnlDlgExpertPropertiesInputsLayout = new javax.swing.GroupLayout(pnlDlgExpertPropertiesInputs);
         pnlDlgExpertPropertiesInputs.setLayout(pnlDlgExpertPropertiesInputsLayout);
@@ -1001,7 +1032,7 @@ public class MainGUI extends javax.swing.JFrame {
         );
         pnlDlgExpertPropertiesInputsLayout.setVerticalGroup(
             pnlDlgExpertPropertiesInputsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 225, Short.MAX_VALUE)
+            .addGap(0, 277, Short.MAX_VALUE)
         );
 
         tabPaneDlgExpertProperties.addTab("Inputs", pnlDlgExpertPropertiesInputs);
@@ -1038,7 +1069,7 @@ public class MainGUI extends javax.swing.JFrame {
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel3Layout.createSequentialGroup()
-                .addContainerGap(11, Short.MAX_VALUE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(cmdDglAttachEpert)
                     .addComponent(cmdDglCancelExpertAttach))
@@ -1595,9 +1626,8 @@ public class MainGUI extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(cmdAddRemvoeSymbol)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)))
+                    .addComponent(cmdAddRemvoeSymbol))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jSplitPane2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(0, 0, 0)
                 .addComponent(toolBarFooter, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -2143,9 +2173,10 @@ public class MainGUI extends javax.swing.JFrame {
         File expert = new File(selectedExpertTreePath.getAbsolutePath());
 
         AttachededExpertModel model = (AttachededExpertModel) tblAttachedExperts.getModel();
-        model.addExpert(expert, selectedSymbolForAttachExpert);
+        Timeframe timeframe = new Timeframe(selectedTimeframeForAttachExpert);
+        model.addExpert(expert, selectedSymbolForAttachExpert, timeframe);
         try {
-            expertManager.attach(expert, selectedSymbolForAttachExpert);
+            expertManager.attach(expert, selectedSymbolForAttachExpert, timeframe);
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(this, "Could not attach expert - " + ExpertUtil.expertSimpleName(expert.getName()), "Failed", JOptionPane.ERROR_MESSAGE);
             model.removeExpert(expert);
@@ -2209,9 +2240,20 @@ public class MainGUI extends javax.swing.JFrame {
     private void cmdDglAttachEpertActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmdDglAttachEpertActionPerformed
         selectedSymbolForAttachExpert = lstDlgExpertPropertiesSelectedSymbol.getSelectedValue();
         if (selectedSymbolForAttachExpert == null) {
-            tabPaneDlgExpertProperties.setSelectedComponent(scrollPaneDlgExpertPropertiesSelectedSymbol);
+            tabPaneDlgExpertProperties.setSelectedComponent(pnlDlgExpertPropertiesAttachTo);
             JOptionPane.showMessageDialog(dlgExpertProperties,
                     "Choose a symbol to attach expert - "
+                    + ExpertUtil.expertSimpleName(
+                            selectedExpertTreePath.getName()),
+                    "Input", JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
+        
+        selectedTimeframeForAttachExpert = lstDlgExpertPropertiesSelectedTimeframe.getSelectedValue();
+        if (selectedTimeframeForAttachExpert == null) {
+            tabPaneDlgExpertProperties.setSelectedComponent(pnlDlgExpertPropertiesAttachTo);
+            JOptionPane.showMessageDialog(dlgExpertProperties,
+                    "Choose a timeframe to attach expert - "
                     + ExpertUtil.expertSimpleName(
                             selectedExpertTreePath.getName()),
                     "Input", JOptionPane.INFORMATION_MESSAGE);
@@ -2723,6 +2765,7 @@ public class MainGUI extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel4;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane10;
+    private javax.swing.JScrollPane jScrollPane11;
     private javax.swing.JScrollPane jScrollPane12;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
@@ -2749,6 +2792,7 @@ public class MainGUI extends javax.swing.JFrame {
     private static javax.swing.JLabel lblResponseMsgDlgOrder;
     private javax.swing.JList<String> lstAllSymbolsDlgSelectSymbols;
     private javax.swing.JList<String> lstDlgExpertPropertiesSelectedSymbol;
+    private javax.swing.JList<String> lstDlgExpertPropertiesSelectedTimeframe;
     private javax.swing.JList<String> lstSelectedSymbolsDlgSelectSymbols;
     private javax.swing.JMenuItem mnuAbout;
     private javax.swing.JMenu mnuAction;
@@ -2773,6 +2817,7 @@ public class MainGUI extends javax.swing.JFrame {
     private javax.swing.JMenuItem mnuRemoveRunningExpert;
     private javax.swing.JMenuItem mnuSignUp;
     private javax.swing.JPanel panelTop;
+    private javax.swing.JPanel pnlDlgExpertPropertiesAttachTo;
     private javax.swing.JPanel pnlDlgExpertPropertiesInputs;
     private javax.swing.JPanel pnlEnterTrade;
     private javax.swing.JPopupMenu popMnuExpert;
