@@ -657,7 +657,7 @@ class ExpertServiceImpl implements IExpertService {
     }
 
     @Override
-    public void Print(String... args) {
+    public void Print(Object... args) {
         MainGUI.expertLog(ExpertUtil.expertSimpleName(__FILE__),
                 expertSymbol,
                 expertTimeframe.getString(),

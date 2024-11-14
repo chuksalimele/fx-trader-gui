@@ -2191,14 +2191,14 @@ public class MainGUI extends javax.swing.JFrame {
         }
     }
 
-    public static void expertLog(String expertName, String symbol, String timeframe, String... msg_arr) {
+    public static void expertLog(String expertName, String symbol, String timeframe, Object... msg_arr) {
         String message = "";
         for (int i = 0; i < msg_arr.length; i++) {
             String sep = " ";
             if (i == msg_arr.length - 1) {
                 sep = "";
             }
-            message += msg_arr[i] + sep;
+            message += msg_arr[i].toString() + sep;
         }
         expertLogModel.addLog(new Date(),
                 expertName + " , "
