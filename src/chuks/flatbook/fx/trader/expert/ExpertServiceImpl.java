@@ -10,6 +10,7 @@ import chuks.flatbook.fx.common.account.order.SymbolInfo;
 import chuks.flatbook.fx.trader.account.contract.TraderAccount;
 import chuks.flatbook.fx.trader.main.Activity;
 import chuks.flatbook.fx.trader.main.MainGUI;
+import chuks.flatbook.fx.trader.main.Timeframe;
 import chuks.flatbook.fx.transport.message.ChannelMessage;
 import expert.ExpertAdvisorMQ4;
 import expert.contract.IExpertAdvisor;
@@ -53,7 +54,7 @@ class ExpertServiceImpl implements IExpertService {
     private double accountMargin;
     private double accountMarginStopout;
     private String expertSymbol;
-    private int expertTimeframe;
+    private Timeframe expertTimeframe;
     private int lastErrorCode;
     private boolean isStop;
     private String __PATH__ = "";
@@ -91,7 +92,7 @@ class ExpertServiceImpl implements IExpertService {
         expertSymbol = symbol;
     }
 
-    void setTimeframe(int timeframe) {
+    void setTimeframe(Timeframe timeframe) {
         expertTimeframe = timeframe;
     }
 
@@ -231,8 +232,9 @@ class ExpertServiceImpl implements IExpertService {
     }
 
     @Override
-    public double NormalizeDouble(double d, int digits) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    public double NormalizeDouble(double value, int digits) {
+        String strDouble = DoubleToStr(value, digits);
+        return Double.parseDouble(strDouble);
     }
 
     @Override
@@ -479,6 +481,7 @@ class ExpertServiceImpl implements IExpertService {
             char side = (char) order_type;
 
             Order order = new Order(symbol_info, side, target, stoploss);
+            order.setMagicNumber(magic_number);
             Future future;
             switch (side) {
                 case Order.Side.BUY, Order.Side.SELL ->
@@ -576,7 +579,7 @@ class ExpertServiceImpl implements IExpertService {
 
     @Override
     public int OrderMagicNumber() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        return selectedOrder.getMagicNumber();
     }
 
     @Override
@@ -595,13 +598,69 @@ class ExpertServiceImpl implements IExpertService {
     }
 
     @Override
-    public int MarketInfo(String symbo, int mode) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    public double MarketInfo(String symbol, int mode) {
+        SymbolInfo symbolInfo = Activity.getSelectedSymbolInfoMap().get(symbol);
+        if (symbolInfo == null) {
+            SetLastError(ERR_SYMBOL_NOT_FOUND);
+            return -1;
+        }
+
+        switch (mode) {
+            case MODE_ASK -> {
+                return symbolInfo.getAsk();
+            }
+            case MODE_BID -> {
+                return symbolInfo.getBid();
+            }
+            case MODE_DIGITS -> {
+                return symbolInfo.getDigits();
+            }
+            case MODE_TICKVALUE -> {
+                return symbolInfo.getTickValue();
+            }
+            case MODE_TICKSIZE -> {
+                return symbolInfo.getTickSize();
+            }
+            case MODE_LOTSIZE -> {
+                return symbolInfo.getLotSize(); //lot size in the base currency
+            }
+            case MODE_OPEN -> {
+                return symbolInfo.getOpen();// Open day price
+            }
+            case MODE_HIGH -> {
+                return symbolInfo.getHigh();// High day price
+            }
+            case MODE_LOW -> {
+                return symbolInfo.getLow();// Low day price
+            }
+            case MODE_CLOSE -> {
+                return symbolInfo.getClose();// Close day price
+            }
+            case MODE_TIME -> {
+                return symbolInfo.getTime();//The last incoming tick time
+            }
+            case MODE_SPREAD -> {
+                return symbolInfo.getSpread();
+            }
+            case MODE_SWAPLONG -> {
+                return symbolInfo.getSwapLong();
+            }
+            case MODE_SWAPSHORT-> {
+                return symbolInfo.getSwapShort();
+            }
+            default -> {
+            }
+        }
+        
+        return -1;
     }
 
     @Override
-    public void Print(Object... args) {
-        //TODO
+    public void Print(String... args) {
+        MainGUI.expertLog(ExpertUtil.expertSimpleName(__FILE__),
+                expertSymbol,
+                expertTimeframe.getString(),
+                args);
     }
 
     @Override
@@ -612,12 +671,12 @@ class ExpertServiceImpl implements IExpertService {
 
     @Override
     public String StringFormat(String str, Object... args) {
-        return str.formatted(args);        
+        return str.formatted(args);
     }
 
     @Override
     public void Comment(Object... args) {
-        
+
     }
 
     @Override
@@ -738,32 +797,32 @@ class ExpertServiceImpl implements IExpertService {
 
     @Override
     public long Time(int shift) {
-        return Activity.getCandleTime(expertSymbol, expertTimeframe, shift);
+        return Activity.getCandleTime(expertSymbol, expertTimeframe.getInt(), shift);
     }
 
     @Override
     public int Volume(int shift) {
-        return Activity.getCandleVolume(expertSymbol, expertTimeframe, shift);
+        return Activity.getCandleVolume(expertSymbol, expertTimeframe.getInt(), shift);
     }
 
     @Override
     public double Open(int shift) {
-        return Activity.getCandleOpen(expertSymbol, expertTimeframe, shift);
+        return Activity.getCandleOpen(expertSymbol, expertTimeframe.getInt(), shift);
     }
 
     @Override
     public double High(int shift) {
-        return Activity.getCandleHigh(expertSymbol, expertTimeframe, shift);
+        return Activity.getCandleHigh(expertSymbol, expertTimeframe.getInt(), shift);
     }
 
     @Override
     public double Low(int shift) {
-        return Activity.getCandleLow(expertSymbol, expertTimeframe, shift);
+        return Activity.getCandleLow(expertSymbol, expertTimeframe.getInt(), shift);
     }
 
     @Override
     public double Close(int shift) {
-        return Activity.getCandleClose(expertSymbol, expertTimeframe, shift);
+        return Activity.getCandleClose(expertSymbol, expertTimeframe.getInt(), shift);
     }
 
     @Override
@@ -870,7 +929,7 @@ class ExpertServiceImpl implements IExpertService {
 
     @Override
     public int Period() {
-        return expertTimeframe;
+        return expertTimeframe.getInt();
     }
 
     @Override
@@ -969,7 +1028,7 @@ class ExpertServiceImpl implements IExpertService {
     public int AccountInfoInteger(int code) {
         switch (code) {
             case ACCOUNT_LOGIN -> {
-                return AccountNumber();//come back
+                return AccountNumber();//come back to check for correctness
             }
             case ACCOUNT_LEVERAGE -> {
                 return AccountLeverage();

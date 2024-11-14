@@ -87,7 +87,7 @@ public class ExpertManager {
         
         //set internal expert properites
         eaService.setSymbol(expertSymbol);
-        eaService.setTimeframe(timeframe.getInt());
+        eaService.setTimeframe(timeframe);
         eaService.SET__FILE__(expertFile.getName());
         eaService.SET__PATH__(expertFile.getAbsolutePath());
         //more goes below

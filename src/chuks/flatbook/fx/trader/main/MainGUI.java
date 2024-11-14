@@ -43,6 +43,7 @@ import chuks.flatbook.fx.trader.expert.ExpertManager;
 import chuks.flatbook.fx.trader.expert.ExpertUtil;
 import chuks.flatbook.fx.trader.ui.FileTreeCellRenderer;
 import chuks.flatbook.fx.trader.ui.model.AttachededExpertModel;
+import chuks.flatbook.fx.trader.ui.model.ExpertLogModel;
 import chuks.flatbook.fx.trader.ui.model.FileTreeModel;
 import expert.contract.IExpertService;
 import java.awt.Color;
@@ -55,6 +56,7 @@ import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.text.DecimalFormat;
 import java.util.Arrays;
+import java.util.Date;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JFormattedTextField;
@@ -83,6 +85,7 @@ public class MainGUI extends javax.swing.JFrame {
     static private OpenOrderTableModel openOrderTableModel = new OpenOrderTableModel();
     static private PendingOrderTableModel pendingOrderTableModel = new PendingOrderTableModel();
     static private HistoryOrderTableModel historyOrderTableModel = new HistoryOrderTableModel();
+    static private ExpertLogModel expertLogModel = new ExpertLogModel();
 
     static private DefaultListModel<String> allSymbolsDlgSelectSymbolsModel;
 
@@ -1191,30 +1194,7 @@ public class MainGUI extends javax.swing.JFrame {
 
         tabPaneOrders.addTab("Pending Orders", jScrollPane3);
 
-        jTable1.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
-                {null, null},
-                {null, null},
-                {null, null},
-                {null, null},
-                {null, null},
-                {null, null},
-                {null, null},
-                {null, null},
-                {null, null}
-            },
-            new String [] {
-                "Time", "Messages"
-            }
-        ) {
-            boolean[] canEdit = new boolean [] {
-                false, false
-            };
-
-            public boolean isCellEditable(int rowIndex, int columnIndex) {
-                return canEdit [columnIndex];
-            }
-        });
+        jTable1.setModel(this.expertLogModel);
         jScrollPane7.setViewportView(jTable1);
 
         tabPaneOrders.addTab("Expert Log", jScrollPane7);
@@ -2188,6 +2168,7 @@ public class MainGUI extends javax.swing.JFrame {
 
         openDestopFileLocation(selectedExpertTreePath);
     }//GEN-LAST:event_mnuOpenExpertDirActionPerformed
+
     void removeExpert(boolean confirm) {
         if (confirm) {
             int option = JOptionPane.showConfirmDialog(this, "The you want to remove expert", "Confirm", JOptionPane.YES_NO_OPTION);
@@ -2208,6 +2189,22 @@ public class MainGUI extends javax.swing.JFrame {
         if (eaFile != null) {
             removeExpert(eaFile);
         }
+    }
+
+    public static void expertLog(String expertName, String symbol, String timeframe, String... msg_arr) {
+        String message = "";
+        for (int i = 0; i < msg_arr.length; i++) {
+            String sep = " ";
+            if (i == msg_arr.length - 1) {
+                sep = "";
+            }
+            message += msg_arr[i] + sep;
+        }
+        expertLogModel.addLog(new Date(),
+                expertName + " , "
+                + symbol + " , "
+                + timeframe + ": "
+                + message);
     }
 
     private void mnuRemoveRunningExpertActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mnuRemoveRunningExpertActionPerformed
@@ -2248,7 +2245,7 @@ public class MainGUI extends javax.swing.JFrame {
                     "Input", JOptionPane.INFORMATION_MESSAGE);
             return;
         }
-        
+
         selectedTimeframeForAttachExpert = lstDlgExpertPropertiesSelectedTimeframe.getSelectedValue();
         if (selectedTimeframeForAttachExpert == null) {
             tabPaneDlgExpertProperties.setSelectedComponent(pnlDlgExpertPropertiesAttachTo);
