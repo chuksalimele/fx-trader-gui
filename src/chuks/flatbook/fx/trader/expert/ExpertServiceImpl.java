@@ -8,6 +8,7 @@ import chuks.flatbook.fx.common.account.order.Order;
 import chuks.flatbook.fx.common.account.order.OrderException;
 import chuks.flatbook.fx.common.account.order.SymbolInfo;
 import chuks.flatbook.fx.trader.account.contract.TraderAccount;
+import chuks.flatbook.fx.trader.exception.ExpertErrorDesc;
 import chuks.flatbook.fx.trader.main.Activity;
 import chuks.flatbook.fx.trader.main.MainGUI;
 import chuks.flatbook.fx.trader.main.Timeframe;
@@ -593,8 +594,8 @@ class ExpertServiceImpl implements IExpertService {
     }
 
     @Override
-    public String ErrorDescription(int error) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    public String ErrorDescription(int error_code) {
+        return ExpertErrorDesc.toString(error_code);
     }
 
     @Override
@@ -645,13 +646,13 @@ class ExpertServiceImpl implements IExpertService {
             case MODE_SWAPLONG -> {
                 return symbolInfo.getSwapLong();
             }
-            case MODE_SWAPSHORT-> {
+            case MODE_SWAPSHORT -> {
                 return symbolInfo.getSwapShort();
             }
             default -> {
             }
         }
-        
+
         return -1;
     }
 
