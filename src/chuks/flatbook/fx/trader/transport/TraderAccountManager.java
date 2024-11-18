@@ -235,14 +235,14 @@ public class TraderAccountManager implements TraderAccount {
     }
 
     @Override
-    public CompletableFuture sendClosePosition(String clOrdId, double lot_size) {
+    public CompletableFuture sendClosePosition(String clOrdId, double lot_size, double price, int slippage) {
 
         CompletableFuture<String> completableFuture = new CompletableFuture<>();
         String requestIdentifier = getUniqe();
 
         ChannelFuture future = ctx.writeAndFlush(MessageFactory
                 .create(MessageType.SEND_CLOSE_POSITION, requestIdentifier)
-                .assign(clOrdId, lot_size));
+                .assign(clOrdId, lot_size, price, slippage));
         handleWriteCompletion(future, success -> {
 
             //store the completableFuture object against the request

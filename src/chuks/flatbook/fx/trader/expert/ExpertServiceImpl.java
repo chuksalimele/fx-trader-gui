@@ -550,7 +550,7 @@ class ExpertServiceImpl implements IExpertService {
     }
 
     @Override
-    public boolean OrderClose(long ticket, double lots, int mode, int slippage) {
+    public boolean OrderClose(long ticket, double lots, double price, int slippage) {
         try {
             SymbolInfo symbol_info = Activity.getSelectedSymbolInfoMap().get(selectedOrder.getSymbol());
             if (symbol_info == null) {
@@ -567,10 +567,10 @@ class ExpertServiceImpl implements IExpertService {
 
             Future future = ExpertManager
                     .getTraderAccount()
-                    .sendClosePosition(order.getOrderID(), lots);
+                    .sendClosePosition(order.getOrderID(), lots, price, slippage);
 
             // Once the task is done, get the result            
-            return (boolean) future.get(); //block till the task is completed                       
+            return (boolean) future.get(); //block till the task is completed
         } catch (InterruptedException | ExecutionException ex) {
             logger.error(ex.getMessage(), ex);
         }

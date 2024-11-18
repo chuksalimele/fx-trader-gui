@@ -30,7 +30,7 @@ public interface TraderOperation {
 
     public CompletableFuture modifyOpenOrder(String clOrdId, double target_price, double stoploss_price);
 
-    public CompletableFuture sendClosePosition(String clOrdId, double lot_size);
+    public CompletableFuture sendClosePosition(String clOrdId, double lot_size, double price, int slippage);
     
     public CompletableFuture placePendingOrder(Order order);
 

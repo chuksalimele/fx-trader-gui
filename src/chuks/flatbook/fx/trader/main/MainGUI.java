@@ -2604,7 +2604,7 @@ public class MainGUI extends javax.swing.JFrame {
         }
 
         if (option == JOptionPane.YES_OPTION) {
-            traderAccount.sendClosePosition(orderID, lot_size);
+            traderAccount.sendClosePosition(orderID, lot_size, null, null);
         }
 
     }
