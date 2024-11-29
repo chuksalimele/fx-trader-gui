@@ -45,6 +45,9 @@ import chuks.flatbook.fx.trader.ui.FileTreeCellRenderer;
 import chuks.flatbook.fx.trader.ui.model.AttachededExpertModel;
 import chuks.flatbook.fx.trader.ui.model.ExpertLogModel;
 import chuks.flatbook.fx.trader.ui.model.FileTreeModel;
+import expert.contract.IExpertAdvisor;
+import static expert.contract.IExpertAdvisor.REASON_PROGRAM;
+import static expert.contract.IExpertAdvisor.REASON_REMOVE;
 import expert.contract.IExpertService;
 import java.awt.Color;
 import java.awt.Component;
@@ -2176,18 +2179,18 @@ public class MainGUI extends javax.swing.JFrame {
                 return;
             }
         }
-        removeExpert(selectedAttachedExpert);
+        removeExpert(selectedAttachedExpert, REASON_REMOVE);
     }
 
-    public static void removeExpert(File expertFile) {
-        expertManager.remove(expertFile);
+    public static void removeExpert(File expertFile, int reason) {
+        expertManager.remove(expertFile, reason);
         attachededExpertModel.removeExpert(expertFile);
     }
 
-    public static void removeExpert(IExpertService eaService) {
+    public static void removeExpert(IExpertService eaService, int reason) {
         File eaFile = expertManager.findExpertPathBy(eaService);
         if (eaFile != null) {
-            removeExpert(eaFile);
+            removeExpert(eaFile, reason);
         }
     }
 
@@ -2269,7 +2272,7 @@ public class MainGUI extends javax.swing.JFrame {
         int[] rows = tblDlgRemoveExpert.getSelectedRows();
         for (int i = 0; i < rows.length; i++) {
             File expertFile = attachededExpertModel.removeExpertAt(i);
-            expertManager.remove(expertFile);
+            expertManager.remove(expertFile, REASON_REMOVE);
         }
     }//GEN-LAST:event_cmdDlgRemoveExpertRemoveActionPerformed
 
@@ -2604,7 +2607,9 @@ public class MainGUI extends javax.swing.JFrame {
         }
 
         if (option == JOptionPane.YES_OPTION) {
-            traderAccount.sendClosePosition(orderID, lot_size, null, null);
+            double price = 0;//0 means close regardless of current price
+            int slippage = 0;// 0 means close regardless of slippage
+            traderAccount.sendClosePosition(orderID, lot_size, price, slippage);
         }
 
     }

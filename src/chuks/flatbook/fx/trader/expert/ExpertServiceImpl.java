@@ -7,23 +7,15 @@ package chuks.flatbook.fx.trader.expert;
 import chuks.flatbook.fx.common.account.order.Order;
 import chuks.flatbook.fx.common.account.order.OrderException;
 import chuks.flatbook.fx.common.account.order.SymbolInfo;
-import chuks.flatbook.fx.trader.account.contract.TraderAccount;
 import chuks.flatbook.fx.trader.exception.ExpertErrorDesc;
 import chuks.flatbook.fx.trader.main.Activity;
 import chuks.flatbook.fx.trader.main.MainGUI;
 import chuks.flatbook.fx.trader.main.Timeframe;
-import chuks.flatbook.fx.transport.message.ChannelMessage;
 import expert.ExpertAdvisorMQ4;
-import expert.contract.IExpertAdvisor;
 import expert.contract.IExpertService;
-import java.io.File;
-import java.nio.file.Path;
 import java.text.DecimalFormat;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Date;
-import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -97,6 +89,7 @@ class ExpertServiceImpl implements IExpertService {
         expertTimeframe = timeframe;
     }
 
+    @Override
     public ExpertAdvisorMQ4 getExpert() {
         return expert;
     }
@@ -753,7 +746,7 @@ class ExpertServiceImpl implements IExpertService {
 
     @Override
     public void ExpertRemove() {
-        MainGUI.removeExpert(this);
+        MainGUI.removeExpert(this, REASON_PROGRAM);
     }
 
     @Override

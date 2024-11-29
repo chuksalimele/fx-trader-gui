@@ -7,8 +7,12 @@ package chuks.flatbook.fx.trader.expert;
 import chuks.flatbook.fx.trader.account.contract.TraderAccount;
 import chuks.flatbook.fx.trader.expert.inject.DependencyRegistry;
 import chuks.flatbook.fx.trader.expert.inject.Injector;
+import chuks.flatbook.fx.trader.main.MainGUI;
 import chuks.flatbook.fx.trader.main.Timeframe;
 import expert.ExpertAdvisorMQ4;
+import expert.contract.IExpertAdvisor;
+import static expert.contract.IExpertAdvisor.INIT_FAILED;
+import static expert.contract.IExpertAdvisor.REASON_INITFAILED;
 import expert.contract.IExpertService;
 import java.io.File;
 import java.util.Collections;
@@ -92,13 +96,17 @@ public class ExpertManager {
         eaService.SET__PATH__(expertFile.getAbsolutePath());
         //more goes below
         
-        ea.OnInit();
+        int init_result = ea.OnInit();
+        
         eaMap.put(expertFile, eaService);
+        
+        if(init_result == INIT_FAILED){
+            MainGUI.removeExpert(expertFile, REASON_INITFAILED);
+        }
     }
 
-    public void remove(File expertFile) {
+    public void remove(File expertFile, int reason) {
         IExpertService service = eaMap.remove(expertFile);
-        int reason = 0;//TODO
         service.getExpert().OnDeinit(reason);
     }
 
