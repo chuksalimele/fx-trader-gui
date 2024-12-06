@@ -2691,8 +2691,8 @@ public class MainGUI extends javax.swing.JFrame {
 
                 //traderAccount.refreshContent();//NOT NECCESSARY - AUTOMATICALLY DONE FROM THE SERVER
                 (tradingClient = new TradingClient(traderAccount,
-                        "localhost",
-                        8080)).start();
+                        "144.91.67.90",
+                        7070)).start();
 
                 mainGUI.setVisible(true);
             } catch (Exception ex) {
