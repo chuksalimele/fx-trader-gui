@@ -1085,6 +1085,11 @@ class ExpertServiceImpl implements IExpertService {
     }
 
     @Override
+    public String[] ArrayResize(String[] arr, int new_size) {
+        return Arrays.copyOf(arr, new_size);
+    }
+
+    @Override
     public long[] ArrayResize(long[] arr, int new_size) {
         return Arrays.copyOf(arr, new_size);
     }

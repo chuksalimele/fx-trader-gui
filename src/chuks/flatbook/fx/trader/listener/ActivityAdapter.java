@@ -135,7 +135,11 @@ public class ActivityAdapter implements OrderActionListener, SymbolUpdateListene
     }
 
     @Override
-    public void onSignUpFail(String reason) {
+    public void onSignUpInitiated(String reason) {
+    }
+    
+    @Override
+    public void onSignUpFailed(String reason) {
     }
 
     @Override

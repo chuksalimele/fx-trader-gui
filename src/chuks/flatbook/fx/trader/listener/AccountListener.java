@@ -13,8 +13,9 @@ public interface AccountListener {
     void onLogInFailed(String reason);
     void onLoggedOut();
     void onLogOutFailed(String reason);
-    void onAccountOpen(int account_number);
-    void onSignUpFail(String reason);
+    void onAccountOpen(int account_number);    
+    void onSignUpInitiated(String email);
+    void onSignUpFailed(String reason);
     void onAccountDisabled();
     void onAccountEnabled();
     void onAccountApproved();

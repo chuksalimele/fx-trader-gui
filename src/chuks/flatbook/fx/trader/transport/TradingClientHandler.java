@@ -76,7 +76,11 @@ class TradingClientHandler extends SharableTransportHandler {
             case LOGIN_FAILED ->
                 handleLoginFailed(ctx, msg);
             case LOGOUT_FAILED ->
-                handleLogoutFaied(ctx, msg);                
+                handleLogoutFaied(ctx, msg); 
+            case SIGN_UP_FAILED ->
+                handleSignUpFaied(ctx, msg);                 
+            case SIGN_UP_INITIATED ->
+                handleSignUpInitiated(ctx, msg);                    
         }
         
         String message_identifier = msg.getIdentifier();
@@ -202,4 +206,12 @@ class TradingClientHandler extends SharableTransportHandler {
     private void handleLogoutFaied(ChannelHandlerContext ctx, ChannelMessage msg) {
         this.accountCtx.onLogOutFailed(msg.getString(0));
     }
+
+    private void handleSignUpFaied(ChannelHandlerContext ctx, ChannelMessage msg) {
+        this.accountCtx.onSignUpFailed(msg.getString(0));
+    }    
+    
+    private void handleSignUpInitiated(ChannelHandlerContext ctx, ChannelMessage msg) {
+        this.accountCtx.onSignUpInitiated(msg.getString(0));
+    }    
 }

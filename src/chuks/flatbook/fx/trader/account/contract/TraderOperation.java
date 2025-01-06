@@ -12,7 +12,6 @@ import chuks.flatbook.fx.common.listener.OrderActionListener;
 import chuks.flatbook.fx.common.listener.SymbolUpdateListener;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Future;
 
 /**
  *

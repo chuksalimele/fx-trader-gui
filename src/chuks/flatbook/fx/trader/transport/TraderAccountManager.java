@@ -4,7 +4,6 @@
  */
 package chuks.flatbook.fx.trader.transport;
 
-import chuks.flatbook.fx.trader.account.contract.AccountContext;
 import chuks.flatbook.fx.trader.account.contract.TraderAccount;
 import chuks.flatbook.fx.common.account.order.Order;
 import chuks.flatbook.fx.common.account.order.SymbolInfo;
@@ -21,17 +20,10 @@ import chuks.flatbook.fx.transport.message.MessageType;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
-import java.util.Collections;
-import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
@@ -53,7 +45,7 @@ public class TraderAccountManager implements TraderAccount {
     List<AccountListener> accountListenerList = new LinkedList();
 
     String getUniqe() {
-        
+
         // Convert UUID to string and remove the hyphens        
         return UUID.randomUUID().toString().replace("-", "");
     }
@@ -522,11 +514,11 @@ public class TraderAccountManager implements TraderAccount {
 
     @Override
     public void onOrderNotAvailable(String req_identifier, String reason) {
-       CompletableFuture future = this.requestFutureStore
+        CompletableFuture future = this.requestFutureStore
                 .getMappedItemAndDelete(req_identifier);
-       if(future !=null){
-           future.completeExceptionally(new OrderNotFoundException("Order not available at the remote end"));
-       }
+        if (future != null) {
+            future.completeExceptionally(new OrderNotFoundException("Order not available at the remote end"));
+        }
         orderActionListenerList.forEach(listener -> {
             listener.onOrderNotAvailable(req_identifier, reason);
         });
@@ -680,8 +672,17 @@ public class TraderAccountManager implements TraderAccount {
     }
 
     @Override
-    public void onSignUpFail(String reason) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    public void onSignUpInitiated(String email) {
+        accountListenerList.forEach(listener -> {
+            listener.onSignUpInitiated(email);
+        });
+    }
+
+    @Override
+    public void onSignUpFailed(String reason) {
+        accountListenerList.forEach(listener -> {
+            listener.onSignUpFailed(reason);
+        });
     }
 
     @Override

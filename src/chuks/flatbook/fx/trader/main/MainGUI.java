@@ -143,8 +143,13 @@ public class MainGUI extends javax.swing.JFrame {
         }
 
         @Override
-        public void onSignUpFail(String reason) {
-            throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        public void onSignUpInitiated(String email) {
+            Toast.show("Successfully signed up with '"+email+"' . Your account awaits approval.", 10000, mainGUI);
+        }
+        
+        @Override
+        public void onSignUpFailed(String reason) {
+            Toast.show(reason, 10000, mainGUI);
         }
 
         @Override
@@ -2691,8 +2696,8 @@ public class MainGUI extends javax.swing.JFrame {
 
                 //traderAccount.refreshContent();//NOT NECCESSARY - AUTOMATICALLY DONE FROM THE SERVER
                 (tradingClient = new TradingClient(traderAccount,
-                        "144.91.67.90",
-                        7070)).start();
+                        "localhost",
+                        7000)).start();
 
                 mainGUI.setVisible(true);
             } catch (Exception ex) {
