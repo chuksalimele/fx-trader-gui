@@ -115,7 +115,7 @@ public class ActivityAdapter implements OrderActionListener, SymbolUpdateListene
     }
 
     @Override
-    public void onLoggedIn() {
+    public void onLoggedIn(int account_number) {
     }
 
     @Override

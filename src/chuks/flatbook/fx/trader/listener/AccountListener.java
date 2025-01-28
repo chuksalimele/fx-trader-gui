@@ -9,7 +9,7 @@ package chuks.flatbook.fx.trader.listener;
  * @author user
  */
 public interface AccountListener {
-    void onLoggedIn();
+    void onLoggedIn(int account_number);
     void onLogInFailed(String reason);
     void onLoggedOut();
     void onLogOutFailed(String reason);

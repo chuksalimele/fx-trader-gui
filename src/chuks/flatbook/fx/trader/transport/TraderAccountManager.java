@@ -609,10 +609,10 @@ public class TraderAccountManager implements TraderAccount {
     }
 
     @Override
-    public void onLoggedIn() {
+    public void onLoggedIn(int account_number) {
         isLoggedIn = true;
         accountListenerList.forEach(listener -> {
-            listener.onLoggedIn();
+            listener.onLoggedIn(account_number);
         });
     }
 

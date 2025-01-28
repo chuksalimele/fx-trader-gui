@@ -9,8 +9,6 @@ import chuks.flatbook.fx.trader.ui.model.OpenOrderTableModel;
 import chuks.flatbook.fx.trader.ui.model.HistoryOrderTableModel;
 import chuks.flatbook.fx.trader.ui.model.MarketWatchTableModel;
 import chuks.flatbook.fx.trader.account.contract.TraderAccount;
-//import fix.account.factory.FixFactory;
-//import quickfix.ConfigError;
 import com.formdev.flatlaf.FlatLightLaf;
 import chuks.flatbook.fx.trader.transport.TraderAccountManager;
 import chuks.flatbook.fx.common.account.order.Order;
@@ -45,13 +43,12 @@ import chuks.flatbook.fx.trader.ui.FileTreeCellRenderer;
 import chuks.flatbook.fx.trader.ui.model.AttachededExpertModel;
 import chuks.flatbook.fx.trader.ui.model.ExpertLogModel;
 import chuks.flatbook.fx.trader.ui.model.FileTreeModel;
-import expert.contract.IExpertAdvisor;
-import static expert.contract.IExpertAdvisor.REASON_PROGRAM;
 import static expert.contract.IExpertAdvisor.REASON_REMOVE;
 import expert.contract.IExpertService;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Desktop;
+import java.awt.Toolkit;
 import java.awt.event.FocusEvent;
 import java.awt.event.MouseEvent;
 import java.io.File;
@@ -83,12 +80,12 @@ public class MainGUI extends javax.swing.JFrame {
     private final String ORDER_ACTION_DELETE = "Delete";
     private final String ORDER_ACTION_CLOSE = "Close";
     private final String ORDER_ACTION_MODIFY = "Modify";
-    static private Activity activity = new Activity();
-    static private MarketWatchTableModel marketWatchTableModel = new MarketWatchTableModel();
+    private static final Activity activity = new Activity();
+    private static final MarketWatchTableModel marketWatchTableModel = new MarketWatchTableModel();
     static private OpenOrderTableModel openOrderTableModel = new OpenOrderTableModel();
-    static private PendingOrderTableModel pendingOrderTableModel = new PendingOrderTableModel();
-    static private HistoryOrderTableModel historyOrderTableModel = new HistoryOrderTableModel();
-    static private ExpertLogModel expertLogModel = new ExpertLogModel();
+    private static final PendingOrderTableModel pendingOrderTableModel = new PendingOrderTableModel();
+    private static final HistoryOrderTableModel historyOrderTableModel = new HistoryOrderTableModel();
+    private static final ExpertLogModel expertLogModel = new ExpertLogModel();
 
     static private DefaultListModel<String> allSymbolsDlgSelectSymbolsModel;
 
@@ -98,7 +95,7 @@ public class MainGUI extends javax.swing.JFrame {
 
     static private TraderAccount traderAccount;
     static private TradingClient tradingClient;
-    private LinkedHashMap<String, Character> orderSides = new LinkedHashMap();
+    private final LinkedHashMap<String, Character> orderSides = new LinkedHashMap();
     private int selectedOpenOrderTableRow = -1;
     private int selectedOpenOrderTableColumn = -1;
     private int selectedPendingOrderTableRow = -1;
@@ -107,7 +104,7 @@ public class MainGUI extends javax.swing.JFrame {
     static private boolean isConnected;
     static private ExpertManager expertManager;
 
-    static private AccountListener accountListerner = new AccountListener() {
+    private static final AccountListener accountListerner = new AccountListener() {
 
         void displayConnectionStatus(String status) {
             lblConnectionStatusDisplay.setText(status);
@@ -116,15 +113,18 @@ public class MainGUI extends javax.swing.JFrame {
         }
 
         @Override
-        public void onLoggedIn() {
+        public void onLoggedIn(int account_number) {
             isConnected = true;
             displayConnectionStatus("Logged in");
+            dlgLogin.setVisible(false);
+            mnuLogin.setEnabled(false);
         }
 
         @Override
         public void onLoggedOut() {
             isConnected = false;
             displayConnectionStatus("Logged out");
+            mnuLogin.setEnabled(true);
         }
 
         @Override
@@ -178,7 +178,7 @@ public class MainGUI extends javax.swing.JFrame {
         }
     };
 
-    private static ConnectionListener connectionListerner = new ConnectionListener() {
+    private static final ConnectionListener connectionListerner = new ConnectionListener() {
 
         void displayConnectionStatus(String status) {
             lblConnectionStatusDisplay.setText(status);
@@ -201,11 +201,14 @@ public class MainGUI extends javax.swing.JFrame {
         public void onDisconnected(String errMsg) {
             isConnected = false;
             displayConnectionStatus(errMsg);
+            mnuLogin.setEnabled(true);
         }
 
     };
 
     private static OrderActionListener userDlgOrderAction;
+    private final int screenWidth;
+    private final int screenHeight;
 
     static class UserOrderAction extends OrderActionAdapter {
 
@@ -255,7 +258,7 @@ public class MainGUI extends javax.swing.JFrame {
 
     };
 
-    static private SymbolUpdateListener uISymbolUpdateHandler = new SymbolUpdateAdapter() {
+    private static final SymbolUpdateListener uISymbolUpdateHandler = new SymbolUpdateAdapter() {
         @Override
         public void onGetFullRefereshSymbol(String symbolName) {
             allSymbolsDlgSelectSymbolsModel.addElement(symbolName);
@@ -303,7 +306,12 @@ public class MainGUI extends javax.swing.JFrame {
      * Creates new form MainGUI
      */
     public MainGUI() {
-        init();
+
+        
+        createExpertLocationIfNotExist();          
+        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        screenWidth = screenSize.width;
+        screenHeight = screenSize.height;
         orderSides.put("SELECT", Order.Side.NONE);
         orderSides.put("BUY", Order.Side.BUY);
         orderSides.put("SELL", Order.Side.SELL);
@@ -311,9 +319,11 @@ public class MainGUI extends javax.swing.JFrame {
         orderSides.put("SELL LIMIT", Order.Side.SELL_LIMIT);
         orderSides.put("BUY STOP", Order.Side.BUY_STOP);
         orderSides.put("SELL STOP", Order.Side.SELL_STOP);
-
+        
         initComponents();
-
+        
+        //this.setSize((int)(0.8* screenWidth), (int)(0.8* screenHeight));
+        
         makePriceSpinnerComponentsPriceCapturable();
 
         ((JSpinner.DefaultEditor) spnLotSizeDlgOrder
@@ -429,18 +439,11 @@ public class MainGUI extends javax.swing.JFrame {
         cmdDlgRemoveExpertRemove = new javax.swing.JButton();
         cmdDlgRemoveExpertDone = new javax.swing.JButton();
         cmdDlgRemoveExpertSelectAll = new javax.swing.JButton();
-        jSplitPane2 = new javax.swing.JSplitPane();
-        tabPaneOrders = new javax.swing.JTabbedPane();
-        jScrollPane2 = new javax.swing.JScrollPane();
-        tblOpenOrders = new javax.swing.JTable();
-        jScrollPane3 = new javax.swing.JScrollPane();
-        tblPendingOrders = new javax.swing.JTable();
-        jScrollPane7 = new javax.swing.JScrollPane();
-        jTable1 = new javax.swing.JTable();
-        jScrollPane8 = new javax.swing.JScrollPane();
-        jTable2 = new javax.swing.JTable();
-        jScrollPane4 = new javax.swing.JScrollPane();
-        tblHistoryOrders = new javax.swing.JTable();
+        contentPanel = new javax.swing.JPanel();
+        pnlHeader = new javax.swing.JPanel();
+        cmdAddRemvoeSymbol = new javax.swing.JButton();
+        cmdEnableAutoTrading = new javax.swing.JToggleButton();
+        splitPaneCenter = new javax.swing.JSplitPane();
         panelTop = new javax.swing.JPanel();
         splitPaneTop = new javax.swing.JSplitPane();
         pnlEnterTrade = new javax.swing.JPanel();
@@ -472,14 +475,22 @@ public class MainGUI extends javax.swing.JFrame {
         tblMarketWatch = new javax.swing.JTable();
         jScrollPane9 = new javax.swing.JScrollPane();
         treeExpertAdvisors = new javax.swing.JTree();
+        tabPaneOrders = new javax.swing.JTabbedPane();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        tblOpenOrders = new javax.swing.JTable();
+        jScrollPane3 = new javax.swing.JScrollPane();
+        tblPendingOrders = new javax.swing.JTable();
+        jScrollPane7 = new javax.swing.JScrollPane();
+        jTable1 = new javax.swing.JTable();
+        jScrollPane8 = new javax.swing.JScrollPane();
+        jTable2 = new javax.swing.JTable();
+        jScrollPane4 = new javax.swing.JScrollPane();
+        tblHistoryOrders = new javax.swing.JTable();
         toolBarFooter = new javax.swing.JToolBar();
         Status = new javax.swing.JLabel();
         lblConnectionStatusDisplay = new javax.swing.JLabel();
         cmdConnectionRetry = new javax.swing.JButton();
         jSeparator3 = new javax.swing.JToolBar.Separator();
-        jPanel2 = new javax.swing.JPanel();
-        cmdEnableAutoTrading = new javax.swing.JToggleButton();
-        cmdAddRemvoeSymbol = new javax.swing.JButton();
         jMenuBar1 = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
         mnuOpenExpertLocation = new javax.swing.JMenuItem();
@@ -1161,86 +1172,48 @@ public class MainGUI extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("FIX Client Platform");
-        setBounds(new java.awt.Rectangle(0, 0, 400, 600));
+        setBounds(new java.awt.Rectangle(0, 0, 400, 500));
         setLocation(new java.awt.Point(0, 0));
         setSize(new java.awt.Dimension(600, 400));
 
-        jSplitPane2.setDividerLocation(300);
-        jSplitPane2.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
+        contentPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 10, 1, 10));
+        contentPanel.setPreferredSize(new java.awt.Dimension(1200, 600));
+        contentPanel.setLayout(new java.awt.BorderLayout());
 
-        tblOpenOrders.setModel(this.openOrderTableModel);
-        this.openOrderTableModel.setCellRender(this.tblOpenOrders);
-        tblOpenOrders.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                tblOpenOrdersMouseClicked(evt);
-            }
-            public void mousePressed(java.awt.event.MouseEvent evt) {
-                tblOpenOrdersMousePressed(evt);
-            }
-            public void mouseReleased(java.awt.event.MouseEvent evt) {
-                tblOpenOrdersMouseReleased(evt);
+        pnlHeader.setPreferredSize(new java.awt.Dimension(1537, 30));
+        pnlHeader.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
+
+        cmdAddRemvoeSymbol.setText("Add / Remove Symbol");
+        cmdAddRemvoeSymbol.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cmdAddRemvoeSymbolActionPerformed(evt);
             }
         });
-        jScrollPane2.setViewportView(tblOpenOrders);
+        pnlHeader.add(cmdAddRemvoeSymbol, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, -1, 30));
 
-        tabPaneOrders.addTab("Open Positions", jScrollPane2);
-
-        tblPendingOrders.setModel(this.pendingOrderTableModel);
-        this.pendingOrderTableModel.setCellRender(this.tblPendingOrders);
-        tblPendingOrders.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                tblPendingOrdersMouseClicked(evt);
-            }
-            public void mousePressed(java.awt.event.MouseEvent evt) {
-                tblPendingOrdersMousePressed(evt);
-            }
-            public void mouseReleased(java.awt.event.MouseEvent evt) {
-                tblPendingOrdersMouseReleased(evt);
+        cmdEnableAutoTrading.setText("Auto Trading");
+        cmdEnableAutoTrading.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cmdEnableAutoTradingActionPerformed(evt);
             }
         });
-        jScrollPane3.setViewportView(tblPendingOrders);
+        pnlHeader.add(cmdEnableAutoTrading, new org.netbeans.lib.awtextra.AbsoluteConstraints(350, 0, -1, 30));
 
-        tabPaneOrders.addTab("Pending Orders", jScrollPane3);
+        contentPanel.add(pnlHeader, java.awt.BorderLayout.NORTH);
 
-        jTable1.setModel(this.expertLogModel);
-        jScrollPane7.setViewportView(jTable1);
+        splitPaneCenter.setDividerLocation(300);
+        splitPaneCenter.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
+        splitPaneCenter.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
+        splitPaneCenter.setOneTouchExpandable(true);
+        splitPaneCenter.setPreferredSize(new java.awt.Dimension(1388, 406));
 
-        tabPaneOrders.addTab("Expert Log", jScrollPane7);
-
-        jTable2.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
-                {null, null},
-                {null, null},
-                {null, null},
-                {null, null}
-            },
-            new String [] {
-                "Time", "Messages"
-            }
-        ) {
-            boolean[] canEdit = new boolean [] {
-                false, false
-            };
-
-            public boolean isCellEditable(int rowIndex, int columnIndex) {
-                return canEdit [columnIndex];
-            }
-        });
-        jScrollPane8.setViewportView(jTable2);
-
-        tabPaneOrders.addTab("Jornal", jScrollPane8);
-
-        tblHistoryOrders.setModel(this.historyOrderTableModel);
-        this.historyOrderTableModel.setCellRender(this.tblHistoryOrders);
-        jScrollPane4.setViewportView(tblHistoryOrders);
-
-        tabPaneOrders.addTab("History Orders", jScrollPane4);
-
-        jSplitPane2.setBottomComponent(tabPaneOrders);
-
+        panelTop.setPreferredSize(new java.awt.Dimension(1388, 400));
         panelTop.setLayout(new javax.swing.BoxLayout(panelTop, javax.swing.BoxLayout.LINE_AXIS));
 
         splitPaneTop.setDividerLocation(250);
+        splitPaneTop.setPreferredSize(new java.awt.Dimension(1388, 400));
+
+        pnlEnterTrade.setPreferredSize(new java.awt.Dimension(931, 400));
 
         jLabel1.setText("Symbol:");
 
@@ -1379,7 +1352,7 @@ public class MainGUI extends javax.swing.JFrame {
                                 .addComponent(spnLotSizeEnterTrade, javax.swing.GroupLayout.PREFERRED_SIZE, 102, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addGap(261, 261, 261))
                             .addComponent(cboSelectSymbolEnterTrade, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                        .addGap(203, 203, 203)))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 203, Short.MAX_VALUE)))
                 .addComponent(jScrollPane10, javax.swing.GroupLayout.PREFERRED_SIZE, 261, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
@@ -1409,18 +1382,20 @@ public class MainGUI extends javax.swing.JFrame {
                             .addGroup(pnlEnterTradeLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                                 .addComponent(jLabel6)
                                 .addComponent(spnEntryPriceForPendingOrderEnterTrade, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                        .addGap(40, 40, 40)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 40, Short.MAX_VALUE)
                         .addGroup(pnlEnterTradeLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(lblBidEnterTrade)
                             .addComponent(jLabel9)
                             .addComponent(lblAskEnterTrade))
                         .addGap(4, 4, 4)
                         .addComponent(cmdConfirmEnterTrade, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(jScrollPane10, javax.swing.GroupLayout.PREFERRED_SIZE, 337, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(164, 164, 164))
+                    .addComponent(jScrollPane10, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         splitPaneTop.setRightComponent(pnlEnterTrade);
+
+        jTabbedPane2.setPreferredSize(new java.awt.Dimension(452, 400));
 
         jPanel1.setLayout(new javax.swing.BoxLayout(jPanel1, javax.swing.BoxLayout.Y_AXIS));
 
@@ -1455,7 +1430,91 @@ public class MainGUI extends javax.swing.JFrame {
 
         panelTop.add(splitPaneTop);
 
-        jSplitPane2.setLeftComponent(panelTop);
+        splitPaneCenter.setLeftComponent(panelTop);
+
+        tabPaneOrders.setPreferredSize(new java.awt.Dimension(452, 200));
+
+        jScrollPane2.setPreferredSize(new java.awt.Dimension(452, 200));
+
+        tblOpenOrders.setModel(this.openOrderTableModel);
+        this.openOrderTableModel.setCellRender(this.tblOpenOrders);
+        tblOpenOrders.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                tblOpenOrdersMouseClicked(evt);
+            }
+            public void mousePressed(java.awt.event.MouseEvent evt) {
+                tblOpenOrdersMousePressed(evt);
+            }
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                tblOpenOrdersMouseReleased(evt);
+            }
+        });
+        jScrollPane2.setViewportView(tblOpenOrders);
+
+        tabPaneOrders.addTab("Open Positions", jScrollPane2);
+
+        jScrollPane3.setPreferredSize(new java.awt.Dimension(452, 200));
+
+        tblPendingOrders.setModel(this.pendingOrderTableModel);
+        this.pendingOrderTableModel.setCellRender(this.tblPendingOrders);
+        tblPendingOrders.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                tblPendingOrdersMouseClicked(evt);
+            }
+            public void mousePressed(java.awt.event.MouseEvent evt) {
+                tblPendingOrdersMousePressed(evt);
+            }
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                tblPendingOrdersMouseReleased(evt);
+            }
+        });
+        jScrollPane3.setViewportView(tblPendingOrders);
+
+        tabPaneOrders.addTab("Pending Orders", jScrollPane3);
+
+        jScrollPane7.setPreferredSize(new java.awt.Dimension(452, 200));
+
+        jTable1.setModel(this.expertLogModel);
+        jScrollPane7.setViewportView(jTable1);
+
+        tabPaneOrders.addTab("Expert Log", jScrollPane7);
+
+        jScrollPane8.setPreferredSize(new java.awt.Dimension(452, 200));
+
+        jTable2.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null},
+                {null, null},
+                {null, null},
+                {null, null}
+            },
+            new String [] {
+                "Time", "Messages"
+            }
+        ) {
+            boolean[] canEdit = new boolean [] {
+                false, false
+            };
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
+        jScrollPane8.setViewportView(jTable2);
+
+        tabPaneOrders.addTab("Jornal", jScrollPane8);
+
+        jScrollPane4.setPreferredSize(new java.awt.Dimension(452, 200));
+
+        tblHistoryOrders.setModel(this.historyOrderTableModel);
+        this.historyOrderTableModel.setCellRender(this.tblHistoryOrders);
+        jScrollPane4.setViewportView(tblHistoryOrders);
+
+        tabPaneOrders.addTab("History Orders", jScrollPane4);
+
+        splitPaneCenter.setBottomComponent(tabPaneOrders);
+
+        contentPanel.add(splitPaneCenter, java.awt.BorderLayout.CENTER);
 
         toolBarFooter.setRollover(true);
         toolBarFooter.setMargin(new java.awt.Insets(0, 10, 0, 10));
@@ -1479,35 +1538,9 @@ public class MainGUI extends javax.swing.JFrame {
         toolBarFooter.add(cmdConnectionRetry);
         toolBarFooter.add(jSeparator3);
 
-        cmdEnableAutoTrading.setText("Auto Trading");
-        cmdEnableAutoTrading.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                cmdEnableAutoTradingActionPerformed(evt);
-            }
-        });
+        contentPanel.add(toolBarFooter, java.awt.BorderLayout.SOUTH);
 
-        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
-        jPanel2.setLayout(jPanel2Layout);
-        jPanel2Layout.setHorizontalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel2Layout.createSequentialGroup()
-                .addGap(20, 20, 20)
-                .addComponent(cmdEnableAutoTrading, javax.swing.GroupLayout.PREFERRED_SIZE, 111, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-        jPanel2Layout.setVerticalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel2Layout.createSequentialGroup()
-                .addComponent(cmdEnableAutoTrading)
-                .addGap(0, 0, Short.MAX_VALUE))
-        );
-
-        cmdAddRemvoeSymbol.setText("Add / Remove Symbol");
-        cmdAddRemvoeSymbol.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                cmdAddRemvoeSymbolActionPerformed(evt);
-            }
-        });
+        getContentPane().add(contentPanel, java.awt.BorderLayout.CENTER);
 
         jMenu1.setText("File");
 
@@ -1537,6 +1570,11 @@ public class MainGUI extends javax.swing.JFrame {
         jMenu1.add(mnuSignUp);
 
         mnuLogout.setText("Logout");
+        mnuLogout.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                mnuLogoutActionPerformed(evt);
+            }
+        });
         jMenu1.add(mnuLogout);
         jMenu1.add(jSeparator5);
 
@@ -1592,35 +1630,6 @@ public class MainGUI extends javax.swing.JFrame {
         jMenuBar1.add(jMenu4);
 
         setJMenuBar(jMenuBar1);
-
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
-        getContentPane().setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jSplitPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 1184, Short.MAX_VALUE)
-                    .addComponent(toolBarFooter, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(cmdAddRemvoeSymbol)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                .addGap(10, 10, 10))
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(cmdAddRemvoeSymbol))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jSplitPane2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, 0)
-                .addComponent(toolBarFooter, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
 
         pack();
         setLocationRelativeTo(null);
@@ -1784,26 +1793,6 @@ public class MainGUI extends javax.swing.JFrame {
         deletePendingOrderOnSelectedTableRow(null);
     }//GEN-LAST:event_mnuItmDeletePendingOrderActionPerformed
 
-    private void tblOpenOrdersMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tblOpenOrdersMousePressed
-        if (evt.isPopupTrigger()) {
-            selectedOpenOrderTable(evt, true);
-        }
-    }//GEN-LAST:event_tblOpenOrdersMousePressed
-
-    private void tblOpenOrdersMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tblOpenOrdersMouseClicked
-        if (evt.getClickCount() == 1 && SwingUtilities.isLeftMouseButton(evt)) {
-            selectedOpenOrderTable(evt, false);
-        } else if (evt.getClickCount() == 2) {//double click
-            selectedOpenOrderTable(evt, true);
-        }
-    }//GEN-LAST:event_tblOpenOrdersMouseClicked
-
-    private void tblOpenOrdersMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tblOpenOrdersMouseReleased
-        if (evt.isPopupTrigger()) {
-            selectedOpenOrderTable(evt, true);
-        }
-    }//GEN-LAST:event_tblOpenOrdersMouseReleased
-
     private void cmdAddRemvoeSymbolActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmdAddRemvoeSymbolActionPerformed
 
         DefaultListModel<String> model = (DefaultListModel<String>) this.lstSelectedSymbolsDlgSelectSymbols.getModel();
@@ -1819,27 +1808,6 @@ public class MainGUI extends javax.swing.JFrame {
 
         this.dlgSelectSymbols.setVisible(true);
     }//GEN-LAST:event_cmdAddRemvoeSymbolActionPerformed
-
-    private void tblPendingOrdersMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tblPendingOrdersMousePressed
-        if (evt.isPopupTrigger()) {
-            selectedPendingOrderTable(evt, true);
-        }
-    }//GEN-LAST:event_tblPendingOrdersMousePressed
-
-    private void tblPendingOrdersMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tblPendingOrdersMouseReleased
-        if (evt.isPopupTrigger()) {
-            selectedPendingOrderTable(evt, true);
-        }
-    }//GEN-LAST:event_tblPendingOrdersMouseReleased
-
-    private void tblPendingOrdersMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tblPendingOrdersMouseClicked
-        if (evt.getClickCount() == 1 && SwingUtilities.isLeftMouseButton(evt)) {
-            selectedPendingOrderTable(evt, false);
-        } else if (evt.getClickCount() == 2) {//double click
-            selectedPendingOrderTable(evt, true);
-        }
-
-    }//GEN-LAST:event_tblPendingOrdersMouseClicked
 
     private void mnuItmCloseOrderActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mnuItmCloseOrderActionPerformed
         closeOpenOrderOnSelectedTableRow(null, 0, true);
@@ -2003,16 +1971,16 @@ public class MainGUI extends javax.swing.JFrame {
     }//GEN-LAST:event_chkRememberMeDlgLoginActionPerformed
 
     private void mnuLoginActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mnuLoginActionPerformed
-        this.dlgLogin.setSize(new Dimension(500, 400));
-        this.dlgLogin.setLocationRelativeTo(this);
+        dlgLogin.setSize(new Dimension(500, 400));
+        dlgLogin.setLocationRelativeTo(this);
 
-        this.dlgLogin.setVisible(true);
+        dlgLogin.setVisible(true);
     }//GEN-LAST:event_mnuLoginActionPerformed
 
     private void mnuSignUpActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mnuSignUpActionPerformed
-        this.dlgSignUp.setSize(new Dimension(500, 400));
-        this.dlgSignUp.setLocationRelativeTo(this);
-        this.dlgSignUp.setVisible(true);
+        dlgSignUp.setSize(new Dimension(500, 400));
+        dlgSignUp.setLocationRelativeTo(this);
+        dlgSignUp.setVisible(true);
     }//GEN-LAST:event_mnuSignUpActionPerformed
 
     private void cmdSignUpDlgSignUpActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmdSignUpDlgSignUpActionPerformed
@@ -2062,7 +2030,7 @@ public class MainGUI extends javax.swing.JFrame {
                         JOptionPane.ERROR_MESSAGE);
                 return;
             }
-            byte[] hashPassword = SecurePasswordUtils.hashPassword(pwdPasswordDlgLogin.getPassword());
+            byte[] hashPassword = SecurePasswordUtils.hashPassword(pwdPasswordDlgSignUp.getPassword());
             traderAccount.signUp(email, hashPassword, firstName, lastName);
         } catch (NoSuchAlgorithmException ex) {
             JOptionPane.showMessageDialog(dlgSignUp,
@@ -2151,7 +2119,7 @@ public class MainGUI extends javax.swing.JFrame {
             return;
         }
 
-        this.dlgExpertProperties.setSize(new Dimension(500, 350));
+        this.dlgExpertProperties.setSize(new Dimension(500, 400));
         this.dlgExpertProperties.setLocationRelativeTo(this);
         dlgExpertProperties.setVisible(true);
     }
@@ -2301,6 +2269,50 @@ public class MainGUI extends javax.swing.JFrame {
         showPopupForAttachedExpert(evt);
     }//GEN-LAST:event_tblAttachedExpertsMouseReleased
 
+    private void tblPendingOrdersMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tblPendingOrdersMouseReleased
+        if (evt.isPopupTrigger()) {
+            selectedPendingOrderTable(evt, true);
+        }
+    }//GEN-LAST:event_tblPendingOrdersMouseReleased
+
+    private void tblPendingOrdersMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tblPendingOrdersMousePressed
+        if (evt.isPopupTrigger()) {
+            selectedPendingOrderTable(evt, true);
+        }
+    }//GEN-LAST:event_tblPendingOrdersMousePressed
+
+    private void tblPendingOrdersMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tblPendingOrdersMouseClicked
+        if (evt.getClickCount() == 1 && SwingUtilities.isLeftMouseButton(evt)) {
+            selectedPendingOrderTable(evt, false);
+        } else if (evt.getClickCount() == 2) {//double click
+            selectedPendingOrderTable(evt, true);
+        }
+    }//GEN-LAST:event_tblPendingOrdersMouseClicked
+
+    private void tblOpenOrdersMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tblOpenOrdersMouseReleased
+        if (evt.isPopupTrigger()) {
+            selectedOpenOrderTable(evt, true);
+        }
+    }//GEN-LAST:event_tblOpenOrdersMouseReleased
+
+    private void tblOpenOrdersMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tblOpenOrdersMousePressed
+        if (evt.isPopupTrigger()) {
+            selectedOpenOrderTable(evt, true);
+        }
+    }//GEN-LAST:event_tblOpenOrdersMousePressed
+
+    private void tblOpenOrdersMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tblOpenOrdersMouseClicked
+        if (evt.getClickCount() == 1 && SwingUtilities.isLeftMouseButton(evt)) {
+            selectedOpenOrderTable(evt, false);
+        } else if (evt.getClickCount() == 2) {//double click
+            selectedOpenOrderTable(evt, true);
+        }
+    }//GEN-LAST:event_tblOpenOrdersMouseClicked
+
+    private void mnuLogoutActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mnuLogoutActionPerformed
+        traderAccount.logout(Activity.getAccountNumber());
+    }//GEN-LAST:event_mnuLogoutActionPerformed
+
     private void showPopupForAttachedExpert(MouseEvent e) {
 
         if (e.isPopupTrigger()) { // Right-click detected
@@ -2350,7 +2362,7 @@ public class MainGUI extends javax.swing.JFrame {
         return dir;
     }
 
-    File createExpertLocationIfNotExist() {
+    private File createExpertLocationIfNotExist() {
 
         File appHome = createAppHomeIfNotExist();
         if (appHome == null) {
@@ -2373,9 +2385,6 @@ public class MainGUI extends javax.swing.JFrame {
         return expertDirectory;
     }
 
-    private void init() {
-        createExpertLocationIfNotExist();
-    }
 
     class PriceFocusAdapter extends java.awt.event.FocusAdapter {
 
@@ -2732,12 +2741,13 @@ public class MainGUI extends javax.swing.JFrame {
     private javax.swing.JButton cmdRemoveSelectedSymbolsDlgSelectSymbols;
     private javax.swing.JButton cmdSignUpDlgSignUp;
     private javax.swing.JButton cmdTransferToSelectedSymbolsDlgSelectSymbols;
+    private javax.swing.JPanel contentPanel;
     private javax.swing.JDialog dlgExpertProperties;
-    private javax.swing.JDialog dlgLogin;
+    private static javax.swing.JDialog dlgLogin;
     private static javax.swing.JDialog dlgOrder;
     private javax.swing.JDialog dlgRemoveExpertDialog;
     private javax.swing.JDialog dlgSelectSymbols;
-    private javax.swing.JDialog dlgSignUp;
+    private static javax.swing.JDialog dlgSignUp;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel11;
     private javax.swing.JLabel jLabel12;
@@ -2767,7 +2777,6 @@ public class MainGUI extends javax.swing.JFrame {
     private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JMenuItem jMenuItem11;
     private javax.swing.JPanel jPanel1;
-    private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
     private javax.swing.JScrollPane jScrollPane1;
@@ -2787,7 +2796,6 @@ public class MainGUI extends javax.swing.JFrame {
     private javax.swing.JToolBar.Separator jSeparator3;
     private javax.swing.JPopupMenu.Separator jSeparator4;
     private javax.swing.JPopupMenu.Separator jSeparator5;
-    private javax.swing.JSplitPane jSplitPane2;
     private javax.swing.JTabbedPane jTabbedPane2;
     private javax.swing.JTable jTable1;
     private javax.swing.JTable jTable2;
@@ -2812,7 +2820,7 @@ public class MainGUI extends javax.swing.JFrame {
     private javax.swing.JMenuItem mnuItmDeletePendingOrder;
     private javax.swing.JMenuItem mnuItmModifyOrder;
     private javax.swing.JMenuItem mnuItmModifyPendingOrder;
-    private javax.swing.JMenuItem mnuLogin;
+    private static javax.swing.JMenuItem mnuLogin;
     private javax.swing.JMenuItem mnuLogout;
     private javax.swing.JMenuItem mnuOpenExpertDir;
     private javax.swing.JMenuItem mnuOpenExpertLocation;
@@ -2827,6 +2835,7 @@ public class MainGUI extends javax.swing.JFrame {
     private javax.swing.JPanel pnlDlgExpertPropertiesAttachTo;
     private javax.swing.JPanel pnlDlgExpertPropertiesInputs;
     private javax.swing.JPanel pnlEnterTrade;
+    private javax.swing.JPanel pnlHeader;
     private javax.swing.JPopupMenu popMnuExpert;
     private javax.swing.JPopupMenu popMnuOpenOrder;
     private javax.swing.JPopupMenu popMnuPendingOrder;
@@ -2835,6 +2844,7 @@ public class MainGUI extends javax.swing.JFrame {
     private javax.swing.JPasswordField pwdPasswordDlgLogin;
     private javax.swing.JPasswordField pwdPasswordDlgSignUp;
     private javax.swing.JScrollPane scrollPaneDlgExpertPropertiesSelectedSymbol;
+    private javax.swing.JSplitPane splitPaneCenter;
     private javax.swing.JSplitPane splitPaneTop;
     private javax.swing.JSpinner spnEntryPriceForPendingOrderEnterTrade;
     private javax.swing.JSpinner spnLotSizeDlgOrder;

@@ -97,7 +97,8 @@ class TradingClientHandler extends SharableTransportHandler {
     }
 
     private void handleLoggedIn(ChannelHandlerContext ctx, ChannelMessage msg) {
-        this.accountCtx.onLoggedIn();
+        int account_number = msg.getInt(0);
+        this.accountCtx.onLoggedIn(account_number);
     }
 
     private void handleNewMarketOrder(ChannelHandlerContext ctx, ChannelMessage msg) {
@@ -148,7 +149,7 @@ class TradingClientHandler extends SharableTransportHandler {
     
     private void addAllOrders0(ChannelMessage msg){
         List<Order> orders = new LinkedList();
-        String[] stringified_order_arr = msg.getStringArray(0);
+        String[] stringified_order_arr = msg.isStringArray(0)? msg.getStringArray(0) : new String[0];
         for (String order_str : stringified_order_arr) {
             orders.add(new Order(order_str));
         }
@@ -179,7 +180,7 @@ class TradingClientHandler extends SharableTransportHandler {
 
     private void handleFullSymbolList(ChannelHandlerContext ctx, ChannelMessage msg) {
         List<String> symbols = new LinkedList();
-        String [] symb_arr = msg.getStringArray(0);
+        String [] symb_arr = msg.isStringArray(0)? msg.getStringArray(0) : new String[0];
         for (String payload1 : symb_arr) {
             symbols.add((String)payload1);
         }
@@ -188,7 +189,7 @@ class TradingClientHandler extends SharableTransportHandler {
 
     private void handleSelectedSymbolInfoList(ChannelHandlerContext ctx, ChannelMessage msg) {
         List<SymbolInfo> symbolInfoList = new LinkedList();
-        String [] stringified_symbInfo_arr = msg.getStringArray(0);
+        String [] stringified_symbInfo_arr = msg.isStringArray(0)? msg.getStringArray(0) : new String[0];
         for (String str_info : stringified_symbInfo_arr) {
             symbolInfoList.add(new SymbolInfo(str_info));
         }

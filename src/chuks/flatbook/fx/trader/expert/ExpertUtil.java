@@ -87,40 +87,39 @@ public class ExpertUtil {
     private static int getClassNameIndex(String path, String clazz) {
         String clazz_A = clazz;
         String clazz_B = clazz;
-        if(clazz.indexOf('/') > 0){
+        if (clazz.indexOf('/') > 0) {
             clazz_B = clazz.replace('/', '\\');
-        }else if(clazz.indexOf('\\') > 0){
+        } else if (clazz.indexOf('\\') > 0) {
             clazz_B = clazz.replace('\\', '/');
         }
-                        
+
         char[] path_chars = path.toCharArray();
         char[] clazz_A_chars = clazz_A.toCharArray();
         int path_index = path_chars.length;
-        for(int i = clazz_A_chars.length - 1; i > -1; --i ){
+        for (int i = clazz_A_chars.length - 1; i > -1; --i) {
             --path_index;
-            if(path_chars[path_index] != clazz_A_chars[i]){
+            if (path_chars[path_index] != clazz_A_chars[i]) {
                 break;
             }
         }
-        
-        if(path_index + clazz_A_chars.length == path_chars.length){
+
+        if (path_index + clazz_A_chars.length == path_chars.length) {
             return path_index;
         }
-        
+
         char[] clazz_B_chars = clazz_B.toCharArray();
         path_index = path_chars.length;
-        for(int i = clazz_B_chars.length - 1; i > -1; --i ){
+        for (int i = clazz_B_chars.length - 1; i > -1; --i) {
             --path_index;
-            if(path_chars[path_index] != clazz_B_chars[i]){
+            if (path_chars[path_index] != clazz_B_chars[i]) {
                 break;
             }
         }
-               
-        if(path_index + clazz_B_chars.length == path_chars.length){
+
+        if (path_index + clazz_B_chars.length == path_chars.length) {
             return path_index;
         }
-        
-        
+
         return -1;//should not happen except something is wrong
     }
 
@@ -129,7 +128,7 @@ public class ExpertUtil {
         try {
 
             String rawCls = getRawClassName(path);
-            int index = getClassNameIndex(path, rawCls);
+            int index = getClassNameIndex(path, rawCls+".class");
             String classPath = path.substring(0, index);
 
             // Create a URL pointing to the directory containing the .class file
@@ -147,8 +146,8 @@ public class ExpertUtil {
                 Object instance = loadedClass.getDeclaredConstructor().newInstance();
                 if (instance instanceof ExpertAdvisorMQ4 expertAdvisorMQ4) {
                     return expertAdvisorMQ4;
-                }else{
-                    throw new NotExpertClassException("Failed to instantiate class - class is expected to extend " + ExpertAdvisorMQ4.class.getName() +" as its super class");
+                } else {
+                    throw new NotExpertClassException("Failed to instantiate class - class is expected to extend " + ExpertAdvisorMQ4.class.getName() + " as its super class");
                 }
 
             } catch (IOException | ClassNotFoundException | NoSuchMethodException

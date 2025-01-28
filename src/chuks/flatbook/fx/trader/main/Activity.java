@@ -25,7 +25,38 @@ import java.util.WeakHashMap;
 public class Activity extends ActivityAdapter {
 
     static private boolean isConnected;
+    static private int accountNumber;
+    private boolean isPlaftormConnected;
+    static private Map<String, SymbolInfo> selectedSymbolInfoMap = Collections.synchronizedMap(new LinkedHashMap());
+    static private Map<Long, Order> openOrdersMap = Collections.synchronizedMap(new LinkedHashMap());
+    static private Map<Long, Order> historyOrdersMap = Collections.synchronizedMap(new LinkedHashMap());
+    static private Map<Long, Order> pendingOrdersMap = Collections.synchronizedMap(new LinkedHashMap());
+    //comibined open and pending orders are trade orders
+    static private Map<Long, Order> tradeOrdersMap = Collections.synchronizedMap(new LinkedHashMap());
 
+    static private List<String> selectedSymbolList;
+    static private List<String> symbolList;
+    private static Order[] historyOrderArray;
+    private static Order[] tradeOrdersArray;
+    private long priceTime;
+    static final private int MAX_TIMEFRAME_ENTRIES = 1000;
+    static private Map<String, List<Candle>> tfM1 = Collections.synchronizedMap(new LinkedHashMap());
+    static private Map<String, List<Candle>> tfM5 = Collections.synchronizedMap(new LinkedHashMap());
+    static private Map<String, List<Candle>> tfM15 = Collections.synchronizedMap(new LinkedHashMap());
+    static private Map<String, List<Candle>> tfM30 = Collections.synchronizedMap(new LinkedHashMap());
+    static private Map<String, List<Candle>> tfH1 = Collections.synchronizedMap(new LinkedHashMap());
+    static private Map<String, List<Candle>> tfH4 = Collections.synchronizedMap(new LinkedHashMap());
+    static private Map<String, List<Candle>> tfD1 = Collections.synchronizedMap(new LinkedHashMap());
+    static private Map<String, List<Candle>> tfW1 = Collections.synchronizedMap(new LinkedHashMap());
+    static private Map<String, List<Candle>> tfMN1 = Collections.synchronizedMap(new LinkedHashMap());
+
+    public static boolean isIsConnected() {
+        return isConnected;
+    }
+    public static int getAccountNumber() {
+        return accountNumber;
+    }
+    
     public static double checkAccountMargin(String symbol, int type, double lot_size) {
         throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
@@ -60,34 +91,6 @@ public class Activity extends ActivityAdapter {
 
     public static double getAccountCredit() {
         throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
-    }
-
-    private boolean isPlaftormConnected;
-    static private Map<String, SymbolInfo> selectedSymbolInfoMap = Collections.synchronizedMap(new LinkedHashMap());
-    static private Map<Long, Order> openOrdersMap = Collections.synchronizedMap(new LinkedHashMap());
-    static private Map<Long, Order> historyOrdersMap = Collections.synchronizedMap(new LinkedHashMap());
-    static private Map<Long, Order> pendingOrdersMap = Collections.synchronizedMap(new LinkedHashMap());
-    //comibined open and pending orders are trade orders
-    static private Map<Long, Order> tradeOrdersMap = Collections.synchronizedMap(new LinkedHashMap());
-
-    static private List<String> selectedSymbolList;
-    static private List<String> symbolList;
-    private static Order[] historyOrderArray;
-    private static Order[] tradeOrdersArray;
-    private long priceTime;
-    static final private int MAX_TIMEFRAME_ENTRIES = 1000;
-    static private Map<String, List<Candle>> tfM1 = Collections.synchronizedMap(new LinkedHashMap());
-    static private Map<String, List<Candle>> tfM5 = Collections.synchronizedMap(new LinkedHashMap());
-    static private Map<String, List<Candle>> tfM15 = Collections.synchronizedMap(new LinkedHashMap());
-    static private Map<String, List<Candle>> tfM30 = Collections.synchronizedMap(new LinkedHashMap());
-    static private Map<String, List<Candle>> tfH1 = Collections.synchronizedMap(new LinkedHashMap());
-    static private Map<String, List<Candle>> tfH4 = Collections.synchronizedMap(new LinkedHashMap());
-    static private Map<String, List<Candle>> tfD1 = Collections.synchronizedMap(new LinkedHashMap());
-    static private Map<String, List<Candle>> tfW1 = Collections.synchronizedMap(new LinkedHashMap());
-    static private Map<String, List<Candle>> tfMN1 = Collections.synchronizedMap(new LinkedHashMap());
-
-    public static boolean isIsConnected() {
-        return isConnected;
     }
 
     private static Map<String, List<Candle>> getTfMap(int timeframe) {
@@ -224,15 +227,18 @@ public class Activity extends ActivityAdapter {
     public static Order[] getTradeOrdersArray() {
         return tradeOrdersArray;
     }
+    
 
     @Override
-    public void onLoggedIn() {
+    public void onLoggedIn(int account_number) {
         isConnected = true;
+        this.accountNumber = account_number;
     }
 
     @Override
     public void onLoggedOut() {
         isConnected = false;
+        this.accountNumber  = - 1;
     }
 
     @Override
