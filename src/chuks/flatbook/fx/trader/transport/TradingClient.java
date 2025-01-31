@@ -29,6 +29,7 @@ public class TradingClient extends TransportClient {
     @Override
     protected void onDisconnected(String msg) {
         traderAccount.onDisconnected(msg);
+        traderAccount.setIsLoggeIn(false);
     }
 
 }

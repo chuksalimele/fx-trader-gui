@@ -17,7 +17,7 @@ public class SpreadRenderer extends BaseTableRenderer{
 
     @Override
     protected void setValue(Object value) {
-        double amt = (double)value;
+        double amt = value instanceof Integer ? (double)(int)value: (double)value;
         String strAmt = decimalFormat.format(amt);
         super.setValue(strAmt);
     }

@@ -328,10 +328,7 @@
                                           <Component id="cmdTransferToSelectedSymbolsDlgSelectSymbols" min="-2" max="-2" attributes="0"/>
                                           <EmptySpace pref="10" max="32767" attributes="0"/>
                                           <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                                              <Group type="102" attributes="0">
-                                                  <Component id="jLabel20" max="32767" attributes="0"/>
-                                                  <EmptySpace max="32767" attributes="0"/>
-                                              </Group>
+                                              <Component id="jLabel20" max="32767" attributes="0"/>
                                               <Component id="jScrollPane6" max="32767" attributes="0"/>
                                           </Group>
                                       </Group>
@@ -1254,6 +1251,9 @@
     <SyntheticProperty name="formSizePolicy" type="int" value="1"/>
     <SyntheticProperty name="generateCenter" type="boolean" value="true"/>
   </SyntheticProperties>
+  <Events>
+    <EventHandler event="windowOpened" listener="java.awt.event.WindowListener" parameters="java.awt.event.WindowEvent" handler="formWindowOpened"/>
+  </Events>
   <AuxValues>
     <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
@@ -1286,7 +1286,10 @@
         </Constraint>
       </Constraints>
 
-      <Layout class="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout"/>
+      <Layout class="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout">
+        <Property name="horizontalGap" type="int" value="10"/>
+        <Property name="verticalGap" type="int" value="10"/>
+      </Layout>
       <SubComponents>
         <Container class="javax.swing.JPanel" name="pnlHeader">
           <Properties>
@@ -1304,12 +1307,12 @@
             <Property name="useNullLayout" type="boolean" value="false"/>
           </Layout>
           <SubComponents>
-            <Component class="javax.swing.JButton" name="cmdAddRemvoeSymbol">
+            <Component class="javax.swing.JButton" name="cmdAddOrRemvoeSymbol">
               <Properties>
                 <Property name="text" type="java.lang.String" value="Add / Remove Symbol"/>
               </Properties>
               <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="cmdAddRemvoeSymbolActionPerformed"/>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="cmdAddOrRemvoeSymbolActionPerformed"/>
               </Events>
               <Constraints>
                 <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignAbsoluteLayout" value="org.netbeans.modules.form.compat2.layouts.DesignAbsoluteLayout$AbsoluteConstraintsDescription">
@@ -1408,7 +1411,7 @@
                                                           <Component id="cboSelectSideEnterTrade" pref="101" max="32767" attributes="0"/>
                                                       </Group>
                                                       <Group type="102" alignment="0" attributes="0">
-                                                          <Component id="lblBidEnterTrade" min="-2" pref="90" max="-2" attributes="0"/>
+                                                          <Component id="lblBidEnterTrade" min="-2" pref="110" max="-2" attributes="0"/>
                                                           <EmptySpace type="separate" max="-2" attributes="0"/>
                                                           <Component id="jLabel9" min="-2" max="-2" attributes="0"/>
                                                       </Group>
@@ -1427,7 +1430,7 @@
                                                               <Component id="spnEntryPriceForPendingOrderEnterTrade" max="32767" attributes="0"/>
                                                           </Group>
                                                       </Group>
-                                                      <Component id="lblAskEnterTrade" alignment="0" min="-2" pref="108" max="-2" attributes="0"/>
+                                                      <Component id="lblAskEnterTrade" alignment="0" min="-2" pref="110" max="-2" attributes="0"/>
                                                   </Group>
                                               </Group>
                                               <Component id="cmdConfirmEnterTrade" max="32767" attributes="0"/>

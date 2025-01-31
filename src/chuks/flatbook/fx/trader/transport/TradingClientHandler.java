@@ -175,7 +175,7 @@ class TradingClientHandler extends SharableTransportHandler {
 
     private void handlePriceChange(ChannelHandlerContext ctx, ChannelMessage msg) {
         SymbolInfo symbolInfo = new SymbolInfo(msg.getString(0));
-        this.accountCtx.onSwapChange(symbolInfo);        
+        this.accountCtx.onPriceChange(symbolInfo);        
     }
 
     private void handleFullSymbolList(ChannelHandlerContext ctx, ChannelMessage msg) {

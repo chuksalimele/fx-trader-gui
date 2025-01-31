@@ -24,4 +24,6 @@ public interface TraderAccount extends TraderOperation, AccountContext{
 
     public boolean isLoggedIn();
 
+    public void setIsLoggeIn(boolean is_logged_in);
+
 }

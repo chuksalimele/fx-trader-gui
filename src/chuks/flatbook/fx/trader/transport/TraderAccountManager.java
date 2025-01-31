@@ -15,8 +15,10 @@ import chuks.flatbook.fx.common.util.OnceAccessStore;
 import static chuks.flatbook.fx.trader.config.AppConfig.MAX_RESPONSE_WAIT_TIME;
 import chuks.flatbook.fx.trader.exception.OrderNotFoundException;
 import chuks.flatbook.fx.trader.exception.OrderSendException;
+import chuks.flatbook.fx.trader.main.Activity;
 import chuks.flatbook.fx.transport.message.MessageFactory;
 import chuks.flatbook.fx.transport.message.MessageType;
+import static chuks.flatbook.fx.transport.message.MessageType.SUBCRIBE_SYMBOLS;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
@@ -72,6 +74,11 @@ public class TraderAccountManager implements TraderAccount {
     }
 
     @Override
+    public void setIsLoggeIn(boolean is_logged_in) {
+        isLoggedIn = is_logged_in;
+    }    
+    
+    @Override
     public boolean isLoggedIn() {
         return isLoggedIn;
     }
@@ -96,10 +103,6 @@ public class TraderAccountManager implements TraderAccount {
         return new char[0];
     }
 
-    @Override
-    public SymbolInfo getSymbolInfo(String symbol) {
-        return null;
-    }
 
     void handleWriteCompletion(ChannelFuture future, Consumer success, Consumer error) {
         // Add a listener to the future to check if the write was successful
@@ -177,7 +180,7 @@ public class TraderAccountManager implements TraderAccount {
 
         ChannelFuture future = ctx.writeAndFlush(MessageFactory
                 .create(MessageType.SEND_MARKET_ORDER, requestIdentifier)
-                .assign(order.stringify()));
+                .assign(Activity.getAccountNumber(), order.stringify()));
         handleWriteCompletion(future, success -> {
 
             //store the completableFuture object against the request
@@ -262,7 +265,7 @@ public class TraderAccountManager implements TraderAccount {
 
         ChannelFuture future = ctx.writeAndFlush(MessageFactory
                 .create(MessageType.PLACE_PENDING_ORDER, requestIdentifier)
-                .assign(order.stringify()));
+                .assign(Activity.getAccountNumber(), order.stringify()));
         handleWriteCompletion(future, success -> {
 
             //store the completableFuture object against the request
@@ -361,13 +364,15 @@ public class TraderAccountManager implements TraderAccount {
     }
 
     @Override
-    public List<String> getSelectedSymbols() {
-        return null;
-    }
-
-    @Override
-    public void setSelectedSymbols(List<String> list) {
-
+    public void subscribeToSelectedSymbols(List<String> list) {
+        String[] symbols = list.toArray(String[]::new);
+        
+        ChannelFuture future = ctx.writeAndFlush(
+                MessageFactory
+                        .create(MessageType.SUBCRIBE_SYMBOLS)
+                        .assign(Activity.getAccountNumber(), symbols)
+        );
+        
     }
 
     @Override
@@ -610,7 +615,7 @@ public class TraderAccountManager implements TraderAccount {
 
     @Override
     public void onLoggedIn(int account_number) {
-        isLoggedIn = true;
+        setIsLoggeIn(true);
         accountListenerList.forEach(listener -> {
             listener.onLoggedIn(account_number);
         });
@@ -618,7 +623,7 @@ public class TraderAccountManager implements TraderAccount {
 
     @Override
     public void onLoggedOut() {
-        isLoggedIn = false;
+        setIsLoggeIn(false);
         accountListenerList.forEach(listener -> {
             listener.onLoggedOut();
         });

@@ -57,6 +57,9 @@ import java.security.NoSuchAlgorithmException;
 import java.text.DecimalFormat;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.LinkedList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JFormattedTextField;
@@ -64,6 +67,7 @@ import javax.swing.JSpinner;
 import javax.swing.text.DefaultFormatterFactory;
 import javax.swing.text.NumberFormatter;
 import javax.swing.tree.TreePath;
+import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.slf4j.LoggerFactory;
 
 /**
@@ -88,7 +92,7 @@ public class MainGUI extends javax.swing.JFrame {
     private static final ExpertLogModel expertLogModel = new ExpertLogModel();
 
     static private DefaultListModel<String> allSymbolsDlgSelectSymbolsModel;
-
+    static private DefaultListModel<String> selectedSymbolsDlgSelectSymbolsModel;
     static DecimalFormat fiveDecimalFormat = new DecimalFormat("0.00000");
     static DecimalFormat threeDecimalFormat = new DecimalFormat("0.000");
     static DecimalFormat twoDecimalFormat = new DecimalFormat("0.00");
@@ -118,6 +122,9 @@ public class MainGUI extends javax.swing.JFrame {
             displayConnectionStatus("Logged in");
             dlgLogin.setVisible(false);
             mnuLogin.setEnabled(false);
+            
+            //subscribe for price streaming            
+            traderAccount.subscribeToSelectedSymbols(marketWatchTableModel.getSymbolList());
         }
 
         @Override
@@ -144,9 +151,9 @@ public class MainGUI extends javax.swing.JFrame {
 
         @Override
         public void onSignUpInitiated(String email) {
-            Toast.show("Successfully signed up with '"+email+"' . Your account awaits approval.", 10000, mainGUI);
+            Toast.show("Successfully signed up with '" + email + "' . Your account awaits approval.", 10000, mainGUI);
         }
-        
+
         @Override
         public void onSignUpFailed(String reason) {
             Toast.show(reason, 10000, mainGUI);
@@ -282,7 +289,8 @@ public class MainGUI extends javax.swing.JFrame {
 
         @Override
         public void onfullSymbolList(List<String> symbol_list) {
-
+            allSymbolsDlgSelectSymbolsModel.clear();//clear previous elements
+            allSymbolsDlgSelectSymbolsModel.addAll(symbol_list);
         }
 
         @Override
@@ -307,8 +315,7 @@ public class MainGUI extends javax.swing.JFrame {
      */
     public MainGUI() {
 
-        
-        createExpertLocationIfNotExist();          
+        createExpertLocationIfNotExist();
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         screenWidth = screenSize.width;
         screenHeight = screenSize.height;
@@ -319,11 +326,10 @@ public class MainGUI extends javax.swing.JFrame {
         orderSides.put("SELL LIMIT", Order.Side.SELL_LIMIT);
         orderSides.put("BUY STOP", Order.Side.BUY_STOP);
         orderSides.put("SELL STOP", Order.Side.SELL_STOP);
-        
+
         initComponents();
-        
+
         //this.setSize((int)(0.8* screenWidth), (int)(0.8* screenHeight));
-        
         makePriceSpinnerComponentsPriceCapturable();
 
         ((JSpinner.DefaultEditor) spnLotSizeDlgOrder
@@ -340,6 +346,7 @@ public class MainGUI extends javax.swing.JFrame {
         validateLotSizeInputControl(spnLotSizeEnterTrade);
 
         allSymbolsDlgSelectSymbolsModel = (DefaultListModel<String>) lstAllSymbolsDlgSelectSymbols.getModel();
+        selectedSymbolsDlgSelectSymbolsModel = (DefaultListModel<String>) lstSelectedSymbolsDlgSelectSymbols.getModel();
     }
 
     public static Component getComponent() {
@@ -441,7 +448,7 @@ public class MainGUI extends javax.swing.JFrame {
         cmdDlgRemoveExpertSelectAll = new javax.swing.JButton();
         contentPanel = new javax.swing.JPanel();
         pnlHeader = new javax.swing.JPanel();
-        cmdAddRemvoeSymbol = new javax.swing.JButton();
+        cmdAddOrRemvoeSymbol = new javax.swing.JButton();
         cmdEnableAutoTrading = new javax.swing.JToggleButton();
         splitPaneCenter = new javax.swing.JSplitPane();
         panelTop = new javax.swing.JPanel();
@@ -756,9 +763,7 @@ public class MainGUI extends javax.swing.JFrame {
                                         .addComponent(cmdTransferToSelectedSymbolsDlgSelectSymbols)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 10, Short.MAX_VALUE)
                                         .addGroup(dlgSelectSymbolsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                            .addGroup(dlgSelectSymbolsLayout.createSequentialGroup()
-                                                .addComponent(jLabel20, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                            .addComponent(jLabel20, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                             .addComponent(jScrollPane6)))
                                     .addGroup(dlgSelectSymbolsLayout.createSequentialGroup()
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -1175,21 +1180,26 @@ public class MainGUI extends javax.swing.JFrame {
         setBounds(new java.awt.Rectangle(0, 0, 400, 500));
         setLocation(new java.awt.Point(0, 0));
         setSize(new java.awt.Dimension(600, 400));
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            public void windowOpened(java.awt.event.WindowEvent evt) {
+                formWindowOpened(evt);
+            }
+        });
 
         contentPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 10, 1, 10));
         contentPanel.setPreferredSize(new java.awt.Dimension(1200, 600));
-        contentPanel.setLayout(new java.awt.BorderLayout());
+        contentPanel.setLayout(new java.awt.BorderLayout(10, 10));
 
         pnlHeader.setPreferredSize(new java.awt.Dimension(1537, 30));
         pnlHeader.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
-        cmdAddRemvoeSymbol.setText("Add / Remove Symbol");
-        cmdAddRemvoeSymbol.addActionListener(new java.awt.event.ActionListener() {
+        cmdAddOrRemvoeSymbol.setText("Add / Remove Symbol");
+        cmdAddOrRemvoeSymbol.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                cmdAddRemvoeSymbolActionPerformed(evt);
+                cmdAddOrRemvoeSymbolActionPerformed(evt);
             }
         });
-        pnlHeader.add(cmdAddRemvoeSymbol, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, -1, 30));
+        pnlHeader.add(cmdAddOrRemvoeSymbol, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, -1, 30));
 
         cmdEnableAutoTrading.setText("Auto Trading");
         cmdEnableAutoTrading.addActionListener(new java.awt.event.ActionListener() {
@@ -1325,7 +1335,7 @@ public class MainGUI extends javax.swing.JFrame {
                                         .addComponent(spnStoplossEnterTrade)
                                         .addComponent(cboSelectSideEnterTrade, 0, 101, Short.MAX_VALUE))
                                     .addGroup(pnlEnterTradeLayout.createSequentialGroup()
-                                        .addComponent(lblBidEnterTrade, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addComponent(lblBidEnterTrade, javax.swing.GroupLayout.PREFERRED_SIZE, 110, javax.swing.GroupLayout.PREFERRED_SIZE)
                                         .addGap(18, 18, 18)
                                         .addComponent(jLabel9)))
                                 .addGap(18, 18, 18)
@@ -1339,7 +1349,7 @@ public class MainGUI extends javax.swing.JFrame {
                                         .addGroup(pnlEnterTradeLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                                             .addComponent(spnTakeProfitEnterTrade, javax.swing.GroupLayout.DEFAULT_SIZE, 101, Short.MAX_VALUE)
                                             .addComponent(spnEntryPriceForPendingOrderEnterTrade)))
-                                    .addComponent(lblAskEnterTrade, javax.swing.GroupLayout.PREFERRED_SIZE, 108, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                    .addComponent(lblAskEnterTrade, javax.swing.GroupLayout.PREFERRED_SIZE, 110, javax.swing.GroupLayout.PREFERRED_SIZE)))
                             .addComponent(cmdConfirmEnterTrade, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addGroup(pnlEnterTradeLayout.createSequentialGroup()
@@ -1637,7 +1647,7 @@ public class MainGUI extends javax.swing.JFrame {
 
     private void cboSelectSymbolEnterTradeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cboSelectSymbolEnterTradeActionPerformed
 
-        SymbolInfo symbolInfo = traderAccount.getSymbolInfo((String) cboSelectSymbolEnterTrade.getSelectedItem());
+        SymbolInfo symbolInfo = Activity.getSelectedSymbolInfoMap().get((String) cboSelectSymbolEnterTrade.getSelectedItem());
 
         if (symbolInfo != null) {
             spnStoplossEnterTrade.setValue(symbolInfo.getBid());
@@ -1708,7 +1718,7 @@ public class MainGUI extends javax.swing.JFrame {
                 return;
             }
 
-            SymbolInfo symbolInfo = traderAccount.getSymbolInfo(symbol);
+            SymbolInfo symbolInfo = Activity.getSelectedSymbolInfoMap().get(symbol);
 
             if (symbolInfo == null) {
                 return;
@@ -1772,16 +1782,6 @@ public class MainGUI extends javax.swing.JFrame {
     }//GEN-LAST:event_cboSelectSideEnterTradeActionPerformed
 
     private void SelectSymbolReceivedFocus(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_SelectSymbolReceivedFocus
-        // Clear existing items
-        /*this.cboSelectSymbolEnterTrade.removeAllItems();
-
-        DefaultComboBoxModel<String> model = (DefaultComboBoxModel<String>) this.cboSelectSymbolEnterTrade.getModel();
-        model.removeAllElements();
-        // Add new items
-        String[] data = {"Apple", "Banana", "Cherry", "Date", "Elderberry"};
-        for (String item : data) {
-            model.addElement(item);
-        }*/
 
     }//GEN-LAST:event_SelectSymbolReceivedFocus
 
@@ -1793,21 +1793,13 @@ public class MainGUI extends javax.swing.JFrame {
         deletePendingOrderOnSelectedTableRow(null);
     }//GEN-LAST:event_mnuItmDeletePendingOrderActionPerformed
 
-    private void cmdAddRemvoeSymbolActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmdAddRemvoeSymbolActionPerformed
-
-        DefaultListModel<String> model = (DefaultListModel<String>) this.lstSelectedSymbolsDlgSelectSymbols.getModel();
-        model.removeAllElements();
-        List selecteSymbols = traderAccount.getSelectedSymbols();
-        if (selecteSymbols == null) {
-            return;
-        }
-        model.addAll(0, selecteSymbols);
+    private void cmdAddOrRemvoeSymbolActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmdAddOrRemvoeSymbolActionPerformed
 
         this.dlgSelectSymbols.setSize(new Dimension(440, 600));
         this.dlgSelectSymbols.setLocationRelativeTo(this);
 
         this.dlgSelectSymbols.setVisible(true);
-    }//GEN-LAST:event_cmdAddRemvoeSymbolActionPerformed
+    }//GEN-LAST:event_cmdAddOrRemvoeSymbolActionPerformed
 
     private void mnuItmCloseOrderActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mnuItmCloseOrderActionPerformed
         closeOpenOrderOnSelectedTableRow(null, 0, true);
@@ -1864,20 +1856,30 @@ public class MainGUI extends javax.swing.JFrame {
     }//GEN-LAST:event_cmdCloseDlgOrderActionPerformed
 
     private void cmdDoneDlgSelectSymbolsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmdDoneDlgSelectSymbolsActionPerformed
-        /*
+
         DefaultListModel<String> model = (DefaultListModel<String>) this.lstSelectedSymbolsDlgSelectSymbols.getModel();
-        List lst = new LinkedList();
+        List<String> lst = new LinkedList();
+        marketWatchTableModel.removeALL();        
+        cboSelectSymbolEnterTrade.removeAllItems();
+      
         model.elements().asIterator().forEachRemaining(entry -> {
             lst.add(entry);
+            SymbolInfo symbolInfo = SymbolInfo.createEmptyInfo(entry);
+            marketWatchTableModel.addSymbolInfo(symbolInfo);
+            cboSelectSymbolEnterTrade.addItem(entry);
         });
-        traderAccount.setSelectedSymbols(lst);
 
-        if (simulate2Clicked) {//TESTING - SIMULATING
-            traderAccount.simulateSetSelectedSymbols(lst);
+        String[] symbols = lst.toArray(String[]::new);
+        try {
+            AppConfig.saveSelectedSymbols(symbols);
+        } catch (ConfigurationException ex) {
+            logger.error(ex.getMessage(), ex);
         }
 
+        traderAccount.subscribeToSelectedSymbols(lst);
+
         this.dlgSelectSymbols.setVisible(false);
-         */
+
     }//GEN-LAST:event_cmdDoneDlgSelectSymbolsActionPerformed
 
     private void cboFilterSymbolsDlgSelectSymbolsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cboFilterSymbolsDlgSelectSymbolsActionPerformed
@@ -1888,30 +1890,30 @@ public class MainGUI extends javax.swing.JFrame {
 
     private void cmdTransferToSelectedSymbolsDlgSelectSymbolsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmdTransferToSelectedSymbolsDlgSelectSymbolsActionPerformed
         List selected_symbols = this.lstAllSymbolsDlgSelectSymbols.getSelectedValuesList();
-        DefaultListModel<String> lst_model = (DefaultListModel) this.lstSelectedSymbolsDlgSelectSymbols.getModel();
-        int lst_size = lst_model.getSize();
+        selectedSymbolsDlgSelectSymbolsModel = (DefaultListModel) this.lstSelectedSymbolsDlgSelectSymbols.getModel();
+        int lst_size = selectedSymbolsDlgSelectSymbolsModel.getSize();
 
         outer:
         for (int i = 0; i < selected_symbols.size(); i++) {
             String symbol = (String) selected_symbols.get(i);
             for (int k = 0; k < lst_size; k++) {
-                if (symbol.equals(lst_model.getElementAt(k))) {
+                if (symbol.equals(selectedSymbolsDlgSelectSymbolsModel.getElementAt(k))) {
                     continue outer;
                 }
             }
-            lst_model.addElement(symbol);
+            selectedSymbolsDlgSelectSymbolsModel.addElement(symbol);
         }
     }//GEN-LAST:event_cmdTransferToSelectedSymbolsDlgSelectSymbolsActionPerformed
 
     private void cmdRemoveSelectedSymbolsDlgSelectSymbolsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmdRemoveSelectedSymbolsDlgSelectSymbolsActionPerformed
         List selected_symbols = this.lstSelectedSymbolsDlgSelectSymbols.getSelectedValuesList();
-        DefaultListModel<String> lst_model = (DefaultListModel) this.lstSelectedSymbolsDlgSelectSymbols.getModel();
+        selectedSymbolsDlgSelectSymbolsModel = (DefaultListModel) this.lstSelectedSymbolsDlgSelectSymbols.getModel();
 
         for (int i = 0; i < selected_symbols.size(); i++) {
             String symbol = (String) selected_symbols.get(i);
-            for (int k = 0; k < lst_model.getSize(); k++) {
-                if (symbol.equals(lst_model.getElementAt(k))) {
-                    lst_model.removeElement(symbol);
+            for (int k = 0; k < selectedSymbolsDlgSelectSymbolsModel.getSize(); k++) {
+                if (symbol.equals(selectedSymbolsDlgSelectSymbolsModel.getElementAt(k))) {
+                    selectedSymbolsDlgSelectSymbolsModel.removeElement(symbol);
                     break;
                 }
             }
@@ -2313,6 +2315,25 @@ public class MainGUI extends javax.swing.JFrame {
         traderAccount.logout(Activity.getAccountNumber());
     }//GEN-LAST:event_mnuLogoutActionPerformed
 
+    private void formWindowOpened(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowOpened
+        try {
+            //populate selected symbols list
+            String[] selected_symbols = AppConfig.getSelectedSymbols();
+            selectedSymbolsDlgSelectSymbolsModel.removeAllElements();
+            selectedSymbolsDlgSelectSymbolsModel.addAll(0, Arrays.asList(selected_symbols));
+            
+            //populate market watch
+            selectedSymbolsDlgSelectSymbolsModel.elements().asIterator().forEachRemaining(entry -> {
+                SymbolInfo symbolInfo = SymbolInfo.createEmptyInfo(entry);
+                marketWatchTableModel.addSymbolInfo(symbolInfo);
+                cboSelectSymbolEnterTrade.addItem(entry);
+            });
+
+        } catch (ConfigurationException ex) {
+            logger.error(ex.getMessage(), ex);
+        }
+    }//GEN-LAST:event_formWindowOpened
+
     private void showPopupForAttachedExpert(MouseEvent e) {
 
         if (e.isPopupTrigger()) { // Right-click detected
@@ -2371,7 +2392,7 @@ public class MainGUI extends javax.swing.JFrame {
 
         File expertDirectory = new File(AppConfig.EXPERTS_DIR);
 
-        // Check if the 'myapp' directory exists
+        // Check if the directory exists
         if (!expertDirectory.exists()) {
             // If it doesn't exist, create it
             if (expertDirectory.mkdir()) {
@@ -2384,7 +2405,6 @@ public class MainGUI extends javax.swing.JFrame {
 
         return expertDirectory;
     }
-
 
     class PriceFocusAdapter extends java.awt.event.FocusAdapter {
 
@@ -2452,7 +2472,7 @@ public class MainGUI extends javax.swing.JFrame {
             return;
         }
 
-        SymbolInfo symbolInfo = traderAccount.getSymbolInfo(symbol);
+        SymbolInfo symbolInfo = Activity.getSelectedSymbolInfoMap().get(symbol);
         if (symbolInfo == null) {
             return;
         }
@@ -2723,7 +2743,7 @@ public class MainGUI extends javax.swing.JFrame {
     private javax.swing.JComboBox<String> cboSelectSideEnterTrade;
     private static javax.swing.JComboBox<String> cboSelectSymbolEnterTrade;
     private javax.swing.JCheckBox chkRememberMeDlgLogin;
-    private javax.swing.JButton cmdAddRemvoeSymbol;
+    private javax.swing.JButton cmdAddOrRemvoeSymbol;
     private static javax.swing.JButton cmdCloseDlgOrder;
     private javax.swing.JButton cmdConfirmEnterTrade;
     private static javax.swing.JButton cmdConnectionRetry;

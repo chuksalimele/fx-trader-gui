@@ -18,12 +18,8 @@ import java.util.concurrent.CompletableFuture;
  * @author user
  */
 public interface TraderOperation {
-
-    public SymbolInfo getSymbolInfo(String symbol);           
     
-    public List<String> getSelectedSymbols();
-
-    public void setSelectedSymbols(List<String> list);    
+    public void subscribeToSelectedSymbols(List<String> list);    
 
     public CompletableFuture sendMarketOrder(Order order);
 

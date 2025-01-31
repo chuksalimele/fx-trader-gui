@@ -364,7 +364,7 @@ public class Activity extends ActivityAdapter {
 
     @Override
     public void onSymbolInfoAdded(SymbolInfo symbolInfo) {
-        //selectedSymbolInfoMap.put(symbolInfo.getName(), symbolInfo);
+        selectedSymbolInfoMap.put(symbolInfo.getName(), symbolInfo);
     }
 
     @Override
@@ -374,6 +374,9 @@ public class Activity extends ActivityAdapter {
 
     @Override
     public void onGetFullRefereshSymbol(String symbolName) {
+        if(!symbolList.contains(symbolName)){
+            symbolList.add(symbolName);
+        }
     }
 
     @Override
@@ -383,7 +386,7 @@ public class Activity extends ActivityAdapter {
 
     @Override
     public void onSeletedSymbolList(List<String> symbol_list) {
-        selectedSymbolList = symbol_list;
+        selectedSymbolList = symbol_list;        
     }
 
     @Override

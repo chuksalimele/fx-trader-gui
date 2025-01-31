@@ -30,6 +30,28 @@ public class MarketWatchTableModel extends AbstractTableModel implements SymbolU
     protected final LinkedList<SymbolInfo> symbolInfoList = new LinkedList<>();
     private JTable table;
     
+
+    public List<String> getSymbolList() {
+        LinkedList<String> symbols = new LinkedList();
+        this.symbolInfoList.forEach(sybInfo->{
+            symbols.add(sybInfo.getName());
+        });                        
+        return symbols;
+    }
+    
+    public int findBySymbolName(String name){
+        if(name == null){
+            return -1;
+        }
+        for(int i=0; i< this.symbolInfoList.size(); i++){
+            if(name.equals(this.symbolInfoList.get(i).getName())){
+                return i;
+            }
+        }
+        
+        return -1;
+    }
+    
     protected int indexOfColumn(String col) {
         for (int i = 0; i < columnNames.length; i++) {
             if (columnNames[i].equals(col)) {
@@ -63,14 +85,23 @@ public class MarketWatchTableModel extends AbstractTableModel implements SymbolU
     }
 
     public void addSymbolInfo(SymbolInfo symbolInfo) {
+        for (SymbolInfo symbInfo : symbolInfoList) {
+            if (symbInfo.getName().equals(symbolInfo.getName())) {
+                if(symbInfo.isEmtpyInfo()){
+                    symbolInfoList.remove(symbInfo);//remove the dummy info 
+                    break;
+                }
+                return;
+            }
+        }        
         symbolInfoList.add(symbolInfo);
         fireTableRowsInserted(symbolInfoList.size() - 1, symbolInfoList.size() - 1);
     }
 
-    public void removeSymbolInfo(SymbolInfo symbolInfo) {
-        int index = symbolInfoList.indexOf(symbolInfo);
+    public void removeSymbolInfo(String symbolName) {
+        int index = findBySymbolName(symbolName);
         if (index < 0) {
-            String errMsg = "Symbol [" + symbolInfo.getName() + "] not found. This should not happen.";
+            String errMsg = "Symbol [" + symbolName + "] not found. This should not happen.";
             System.out.println(errMsg);
             JOptionPane.showMessageDialog(null, errMsg, "Error", JOptionPane.ERROR_MESSAGE);
             return;
@@ -124,7 +155,7 @@ public class MarketWatchTableModel extends AbstractTableModel implements SymbolU
 
     @Override
     public void onSwapChange(SymbolInfo symbolInfo) {
-        int index = this.symbolInfoList.indexOf(symbolInfo);
+        int index = findBySymbolName(symbolInfo.getName());
         if (index != -1) {
             this.updateSymbolInfo(index, symbolInfo);
         } else {
@@ -134,7 +165,7 @@ public class MarketWatchTableModel extends AbstractTableModel implements SymbolU
 
     @Override
     public void onPriceChange(SymbolInfo symbolInfo) {
-        int index = this.symbolInfoList.indexOf(symbolInfo);
+        int index = findBySymbolName(symbolInfo.getName());
         if (index != -1) {
             this.updateSymbolInfo(index, symbolInfo);
         } else {
@@ -147,14 +178,15 @@ public class MarketWatchTableModel extends AbstractTableModel implements SymbolU
         //avoid duplicate
         for (SymbolInfo symbInfo : symbolInfoList) {
             if (symbInfo.getName().equals(symbolInfo.getName())) {
-                //symbolInfoList.remove(symbInfo);
-                //break;
+                if(symbInfo.isEmtpyInfo()){
+                    symbolInfoList.remove(symbInfo);//remove the dummy info 
+                    break;
+                }
                 return;
             }
         }
         symbolInfoList.add(symbolInfo);
-        int index = symbolInfoList.lastIndexOf(symbolInfo);
-        fireTableRowsInserted(index, index);
+        fireTableRowsInserted(symbolInfoList.size() - 1, symbolInfoList.size() - 1);
     }
 
     @Override
@@ -183,8 +215,11 @@ public class MarketWatchTableModel extends AbstractTableModel implements SymbolU
             return;
         }
 
-        fireTableRowsDeleted(0, symbol_info_list.size() - 1);
+        
+        fireTableRowsDeleted(0, symbolInfoList.size() - 1);
         this.symbolInfoList.clear();
+        
+        
         this.symbolInfoList.addAll(symbol_info_list);
         fireTableRowsInserted(0, symbol_info_list.size() - 1);
     }
@@ -192,5 +227,15 @@ public class MarketWatchTableModel extends AbstractTableModel implements SymbolU
     @Override
     public void onfullSymbolList(List<String> symbol_list) {
         
+    }
+
+    public void removeALL() {   
+                
+        if (symbolInfoList.isEmpty()) {
+            return;
+        }
+        
+        fireTableRowsDeleted(0, this.symbolInfoList.size() - 1);
+        this.symbolInfoList.clear();
     }
 }
